@@ -1,0 +1,21 @@
+{
+  "i18n-ally.localesPaths": "src/assets/i18n",
+  "explorer.compactFolders": false,
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#f86464",
+    "activityBar.activeBorder": "#fa45d4",
+    "activityBar.background": "#f86464",
+    "activityBar.foreground": "#15202b",
+    "activityBar.inactiveForeground": "#15202b99",
+    "activityBarBadge.background": "#fa45d4",
+    "activityBarBadge.foreground": "#15202b",
+    "statusBar.background": "#f86464",
+    "statusBar.foreground": "#15202b",
+    "statusBarItem.hoverBackground": "#f86464",
+    "titleBar.activeBackground": "#f86464",
+    "titleBar.activeForeground": "#15202b",
+    "titleBar.inactiveBackground": "#f86464",
+    "titleBar.inactiveForeground": "#15202b99"
+  },
+  "peacock.color": "#61dafb"
+}
