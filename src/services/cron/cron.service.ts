@@ -4,7 +4,7 @@ import { TaskRunner } from 'src/helpers/task-runner';
 
 @Injectable()
 export class CronService {
-    constructor(private readonly taskRunner: TaskRunner) {}
+    constructor(private readonly taskRunner: TaskRunner) { }
 
     @Cron(CronExpression.EVERY_MINUTE)
     async startProcess() {

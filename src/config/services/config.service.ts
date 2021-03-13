@@ -18,7 +18,12 @@ export class ConfigService {
         }
         else {
             this.envConfig = {
-                PORT: process.env.PORT
+                PORT: process.env.PORT,
+                SCHEDULE: process.env.SCHEDULE,
+                ACTIVE: process.env.ACTIVE,
+                BASE_URL: process.env.BASE_URL,
+                USERNAME: process.env.USERNAME,
+                PASSWORD: process.env.PASSWORD,
             }
         }
     }
