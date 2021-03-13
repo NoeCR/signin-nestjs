@@ -1,16 +1,25 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TaskRunner } from './helpers/task-runner';
-import { CronService } from './services/cron/cron.service';
-// import { PuppeteerModule } from 'nest-puppeteer';
-import { PuppeteerService } from './services/puppeteer/puppeteer.service';
+import { ConfigModule } from './config/config.module';
+import { ConfigService } from './config/services/config.service';
+import { EConfiguration } from './config/enum/config-keys.enum';
 
+import { TaskRunner } from './helpers/task-runner';
+// Services
+import { PuppeteerService } from './services/puppeteer/puppeteer.service';
+import { CronService } from './services/cron/cron.service';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    // PuppeteerModule.forRoot({ pipe: true }),
+    ConfigModule,
   ],
   controllers: [],
   providers: [CronService, PuppeteerService, TaskRunner],
 })
-export class AppModule {}
+export class AppModule {
+  static port: number | string;
+
+  constructor(private readonly _configService: ConfigService) {
+    AppModule.port = this._configService.get(EConfiguration.PORT)
+  }
+}

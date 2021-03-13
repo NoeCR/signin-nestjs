@@ -3,11 +3,9 @@ import { PuppeteerService } from "src/services/puppeteer/puppeteer.service";
 
 @Injectable()
 export class TaskRunner {
-  constructor(private readonly puppeteerService: PuppeteerService)  {}
-  // constructor(@InjectBrowser() private readonly browser: Browser) {}
+  constructor(private readonly puppeteerService: PuppeteerService) { }
 
   async runTask() {
-    // this.cronService.startProcess()
     console.log('Process has been started 2!');
     await this.puppeteerService.startUp();
 
