@@ -5,4 +5,5 @@ export enum EConfiguration {
   BASE_URL = 'BASE_URL',
   USERNAME = 'USERNAME',
   PASSWORD = 'PASSWORD',
+  TIMEOUT = 'TIMEOUT',
 }
