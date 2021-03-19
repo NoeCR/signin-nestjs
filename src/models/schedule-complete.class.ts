@@ -30,8 +30,22 @@ export class ScheduleComplete extends Schedule {
         // TODO: First action depends if its signin or signout for check status of button
         // And do next action or close (if its stopped when try to signout, do nothing)
         {
-          action: EAction.CLICK,
-          selector: 'some selector here',
+          action: EAction.COOKIES,
+          selector: '__cfduid,PHPSESSID', // This selector is the names of the cookies to be processed.
+          returnAs: 'cookies'
+        },
+        {
+          action: EAction.REQUEST,
+          selector: 'holded',
+          returnAs: 'list'
+        },
+        {
+          action: EAction.NAVIGATE,
+          selector: 'calendar'
+        },
+        {
+          action: EAction.EVALUATE,
+          selector: '{USER_ID}'
         }
       ]
     }

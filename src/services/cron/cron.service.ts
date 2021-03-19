@@ -8,7 +8,12 @@ import { TaskRunner } from 'src/helpers/task-runner';
 export class CronService {
     constructor(private readonly taskRunner: TaskRunner, private readonly _configService: ConfigService) { }
     // TODO: Use Better CronExpression.EVERY_QUARTER
-    @Cron('*/10 * * * * *')
+    /**
+     * Every 10 seconds: 
+     // 'Asterisco/10 * * * * *'
+     CronExpression.EVERY_MINUTE
+     */
+    @Cron(CronExpression.EVERY_MINUTE)
     async startProcess() {
         console.log('CronService ', CronExpression.EVERY_QUARTER)
         console.log('CronService isActiveTask ', this.isActiveTask())

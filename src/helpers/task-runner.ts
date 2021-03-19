@@ -5,6 +5,8 @@ import { scheduleStrategy } from "./schedule-strategy";
 import { ConfigService } from "src/config/services/config.service";
 import { mustRunTask } from "src/validators/execute-task.validator";
 import { Time } from "@shared/types/time.type";
+import { EConfiguration } from "src/config/enum/config-keys.enum";
+import { IDomainCookies } from "src/interfaces/domain-cookies.interface";
 @Injectable()
 export class TaskRunner {
   constructor(private readonly puppeteerService: PuppeteerService, readonly configService: ConfigService) { }
@@ -27,15 +29,26 @@ export class TaskRunner {
       // TODO: Inicializar Puppeteer
       await this.puppeteerService.startUp({
         username: task.username,
-        password: task.password
+        password: task.password,
+        userId: task.userId,
       });
 
       console.log('Process has been started 2!');
-      await this.puppeteerService.goTo(`${task.url}/login`);
+      await this.puppeteerService.goTo(`${task.url}${this.configService.get(EConfiguration.LOGIN_PATH)}`);
 
       for (const step of task.loginSteps) {
         await this.puppeteerService.doStep(step);
       }
+
+      for (const step of task.jobSteps) {
+        await this.puppeteerService.doStep(step);
+      }
+
+      // TODO: Si se ejecuta en entorno local usar el mock de cookies
+      // const cookies: IDomainCookies = await this.puppeteerService.getDomainCookies();
+      // const domainCookies = cookies.cookies.filter(cookie => cookie.domain.endsWith(this.configService.get(EConfiguration.DOMAIN)));
+      // console.log({ domainCookies });
+
       // TODO: Validar que la tarea se ha llevado a cabo
       // TODO: Notificar
 

@@ -18,11 +18,16 @@ export class CryptoService {
   }
 
   async cipher(text: string): Promise<string> {
-    const key = (await promisify(scrypt)(this.salt, 'salt', 32)) as Buffer;
+    try {
+      const key = (await promisify(scrypt)(this.salt, 'salt', 32)) as Buffer;
 
-    const cipher = createCipheriv(this.algorithm, key, this.iv);
+      const cipher = createCipheriv(this.algorithm, key, this.iv);
 
-    return `${cipher.update(text, 'utf8', 'hex')}${cipher.final('hex')}`;
+      return `${cipher.update(text, 'utf8', 'hex')}${cipher.final('hex')}`;
+    }
+    catch (error) {
+      console.log(error);
+    }
   }
 
   async decrypt(text: string): Promise<string> {

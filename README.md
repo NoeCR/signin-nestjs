@@ -67,4 +67,6 @@ Nest is [MIT licensed](LICENSE).
 
 ## WIP
 
-- 
+- Mapear valores de data-workingdays con los getEnabledDays del Schedule
+- Comprobar que es un día laborable
+- Comprobar que no hay que exluir el día por motivos: vacaciones, enfermedad, etc..

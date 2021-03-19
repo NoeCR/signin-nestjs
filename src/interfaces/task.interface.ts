@@ -6,6 +6,7 @@ export class ITask {
   url: string;
   username: string;
   password: string;
+  userId: string;
   enableDays: Array<EWeekDays>;
   signin: Time | Time[];
   signout: Time | Time[];

@@ -13,6 +13,7 @@ export abstract class Schedule {
       url: this._configService.get(EConfiguration.BASE_URL),
       username: this._configService.get(EConfiguration.USERNAME),
       password: this._configService.get(EConfiguration.PASSWORD),
+      userId: this._configService.get(EConfiguration.USER_ID),
     }
   }
 
