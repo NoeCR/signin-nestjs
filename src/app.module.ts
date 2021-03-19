@@ -8,13 +8,14 @@ import { TaskRunner } from './helpers/task-runner';
 // Services
 import { PuppeteerService } from './services/puppeteer/puppeteer.service';
 import { CronService } from './services/cron/cron.service';
+import { CryptoService } from './services/crypto/crypto.service';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     ConfigModule,
   ],
   controllers: [],
-  providers: [CronService, PuppeteerService, TaskRunner],
+  providers: [CronService, PuppeteerService, CryptoService, TaskRunner],
 })
 export class AppModule {
   static port: number | string;

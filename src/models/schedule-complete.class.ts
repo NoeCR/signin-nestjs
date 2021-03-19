@@ -12,8 +12,18 @@ export class ScheduleComplete extends Schedule {
       signout: ['14:00', '17:00'],
       loginSteps: [
         {
+          action: EAction.TYPE,
+          selector: '#tpemail',
+          text: '{USERNAME}'
+        },
+        {
+          action: EAction.TYPE,
+          selector: '#tppassword',
+          text: '{PASSWORD}'
+        },
+        {
           action: EAction.CLICK,
-          selector: 'some selector here',
+          selector: '#btnlogin',
         }
       ],
       jobSteps: [

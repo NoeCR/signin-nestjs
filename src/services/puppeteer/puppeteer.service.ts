@@ -4,18 +4,24 @@ import * as puppeteer from 'puppeteer';
 import { EConfiguration } from 'src/config/enum/config-keys.enum';
 import { ConfigService } from 'src/config/services/config.service';
 import { IStep } from 'src/interfaces/step.interface';
+import { CryptoService } from '../crypto/crypto.service';
 
+interface ICredentials { username: string, password: string };
 @Injectable()
 export class PuppeteerService {
   private page: any;
   private browser: any;
+  private credentials: ICredentials;
 
-  constructor(private readonly _configService: ConfigService) {
+  constructor(
+    private readonly _configService: ConfigService,
+    private readonly cryptoService: CryptoService
+  ) {
     this.page = null;
     this.browser = null;
   }
 
-  async startUp() {
+  async startUp(credentials: ICredentials) {
     try {
       this.browser = await puppeteer.launch({
         headless: false,
@@ -33,6 +39,7 @@ export class PuppeteerService {
       this.page = await this.browser.newPage();
       await this.page.setCacheEnabled(false);
 
+      this.credentials = credentials;
       return;
     } catch (error) {
       throw new Error('Start UP failed!')
@@ -55,6 +62,7 @@ export class PuppeteerService {
         waitUntil: 'networkidle2'
       });
     } catch (error) {
+      console.log('goTo ', error);
       throw new Error(`Error`)
     }
   }
@@ -92,8 +100,10 @@ export class PuppeteerService {
 
   async waitAndType(selector, text) {
     try {
-      await this.page.waitForSelector(selector)
-      await this.page.type(selector, text)
+      await this.page.waitForSelector(selector);
+      console.log('waitAndType ');
+      console.log('waitAndType ', this._parseText(text));
+      await this.page.type(selector, await this._parseText(text));
     } catch (error) {
       throw new Error(`Could not type '${text}', into selector: ${selector}`)
     }
@@ -116,6 +126,29 @@ export class PuppeteerService {
       return await this.page.$$eval(selector, el => el.length);
     } catch (error) {
       throw new Error(`Could not get count from selector: ${selector}`)
+    }
+  }
+
+  async _parseText(text: string): Promise<string> {
+    try {
+      text = text.trim();
+      let parsed;
+
+      switch (text) {
+        case '{USERNAME}':
+          parsed = this.credentials.username;
+          break;
+        case '{PASSWORD}':
+          parsed = await this.cryptoService.decrypt(this.credentials.password);
+          break;
+        default:
+          parsed = text;
+      }
+
+      return parsed;
+    }
+    catch (error) {
+      console.log(error);
     }
   }
 }

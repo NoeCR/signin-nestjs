@@ -25,7 +25,10 @@ export class TaskRunner {
       if (!isTimeToExecute) return;
 
       // TODO: Inicializar Puppeteer
-      await this.puppeteerService.startUp();
+      await this.puppeteerService.startUp({
+        username: task.username,
+        password: task.password
+      });
 
       console.log('Process has been started 2!');
       await this.puppeteerService.goTo(`${task.url}/login`);
