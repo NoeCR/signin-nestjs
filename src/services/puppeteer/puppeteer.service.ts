@@ -8,6 +8,7 @@ import { IStep } from 'src/interfaces/step.interface';
 import { CryptoService } from '../crypto/crypto.service';
 import { HoldedService } from '../holded/holded.service';
 import { DateTime } from 'luxon';
+import { mockedCookies } from 'mock/assets/cookies-mock';
 
 interface ICredentials { username: string, password: string, userId: string };
 @Injectable()
@@ -47,6 +48,11 @@ export class PuppeteerService {
       await this.page.setCacheEnabled(false);
 
       this.credentials = credentials;
+      console.log(this._configService.get(EConfiguration.NODE_ENV));
+      console.log(...mockedCookies.cookies);
+      if (this._configService.get(EConfiguration.NODE_ENV) === 'test')
+        await this.page.setCookie(...mockedCookies.cookies);
+
       return;
     } catch (error) {
       throw new Error('Start UP failed!')
@@ -101,6 +107,11 @@ export class PuppeteerService {
         const url = `${this._configService.get(EConfiguration.BASE_URL)}/${step.selector}`
         await this.goTo(url);
         break;
+      case EAction.EVALUATE:
+        console.log(EAction.EVALUATE);
+        // const url = `${this._configService.get(EConfiguration.BASE_URL)}/${step.selector}`
+        // await this.goTo(url);
+        break;
       default:
         throw new Error('Action not implemented');
     }
@@ -114,7 +125,7 @@ export class PuppeteerService {
           const year = DateTime.local().setZone('Europe/Madrid').toFormat('y');
 
           this.result[returnAs] = await this.holdedService.getHolidaysList(month, year, this.cookies);
-          console.log(this.result[returnAs].data);
+          console.log('_prepareAndDoRequest finish', this.result[returnAs].data);
           break;
 
         default:

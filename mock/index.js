@@ -26,6 +26,8 @@ app.get('/calendar', (req, res) => {
 });
 
 app.post('/leaves/month/:month/:year', (req, res) => {
+  console.log('GET JSON DATA >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+  res.header("Content-Type", 'application/json');
   res.sendFile(path.join(__dirname + '/assets/response-calendar-holded.json'))
 });
 
