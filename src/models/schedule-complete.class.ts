@@ -44,8 +44,9 @@ export class ScheduleComplete extends Schedule {
           selector: 'calendar'
         },
         {
-          action: EAction.EVALUATE,
-          selector: '{USER_ID}'
+          action: EAction.XPATH,
+          selector: '{USER_ID}',
+          returnAs: 'ids'
         }
       ]
     }

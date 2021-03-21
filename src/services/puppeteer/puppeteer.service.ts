@@ -107,10 +107,9 @@ export class PuppeteerService {
         const url = `${this._configService.get(EConfiguration.BASE_URL)}/${step.selector}`
         await this.goTo(url);
         break;
-      case EAction.EVALUATE:
-        console.log(EAction.EVALUATE);
-        // const url = `${this._configService.get(EConfiguration.BASE_URL)}/${step.selector}`
-        // await this.goTo(url);
+      case EAction.XPATH:
+        console.log(EAction.XPATH);
+        await this.waitAndGetElementByXPath(await this._parseText(step.selector), step.returnAs);
         break;
       default:
         throw new Error('Action not implemented');
@@ -174,6 +173,28 @@ export class PuppeteerService {
 
       return await this.page.$$eval(selector, el => el.length);
     } catch (error) {
+      throw new Error(`Could not get count from selector: ${selector}`)
+    }
+  }
+
+  async waitAndGetElementByXPath(selector, returnAs) {
+    try {
+      await this.page.waitForXPath(`//span[contains(.,'${selector}')]`);
+
+      // Get div that contains span with user identifier
+      const [div] = await this.page.$x(`//span[contains(.,'${selector}')]/parent::div`);
+
+      // Extract attributes from HTML div
+      const props = await this.page.evaluate(
+        element => Array.from(element.attributes, ({ name, value }) => `${name}: ${value}`),
+        div
+      );
+
+      this.result[returnAs] = props;
+
+      return;
+    } catch (error) {
+      console.log('waitAndGetElementByXPath Error ', error);
       throw new Error(`Could not get count from selector: ${selector}`)
     }
   }

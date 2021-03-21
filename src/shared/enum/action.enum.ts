@@ -7,5 +7,5 @@ export enum EAction {
   COOKIES = 'COOKIES',
   REQUEST = 'REQUEST',
   NAVIGATE = 'NAVIGATE',
-  EVALUATE = 'EVALUATE',
+  XPATH = 'XPATH',
 }
