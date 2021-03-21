@@ -10,13 +10,14 @@ import { HoldedService } from '../holded/holded.service';
 import { DateTime } from 'luxon';
 import { mockedCookies } from 'mock/assets/cookies-mock';
 import { shouldExecuteTask } from 'src/validators/execute-task.validator';
+import { IPuppeteerParams } from 'src/interfaces/puppeteer-params.interface';
 
-interface ICredentials { username: string, password: string, userId: string };
+
 @Injectable()
 export class PuppeteerService {
   private page: any;
   private browser: any;
-  private credentials: ICredentials;
+  private params: IPuppeteerParams;
   private cookies: IDomainCookies;
   private result: any;
 
@@ -30,7 +31,7 @@ export class PuppeteerService {
     this.result = {};
   }
 
-  async startUp(credentials: ICredentials) {
+  async startUp(initParams: IPuppeteerParams) {
     try {
       this.browser = await puppeteer.launch({
         headless: false,
@@ -48,7 +49,8 @@ export class PuppeteerService {
       this.page = await this.browser.newPage();
       await this.page.setCacheEnabled(false);
 
-      this.credentials = credentials;
+      this.params = initParams;
+      console.log(initParams);
       console.log(this._configService.get(EConfiguration.NODE_ENV));
       console.log(...mockedCookies.cookies);
       if (this._configService.get(EConfiguration.NODE_ENV) === 'test')
@@ -212,13 +214,13 @@ export class PuppeteerService {
 
       switch (text) {
         case '{USERNAME}':
-          parsed = this.credentials.username;
+          parsed = this.params.username;
           break;
         case '{PASSWORD}':
-          parsed = await this.cryptoService.decrypt(this.credentials.password);
+          parsed = await this.cryptoService.decrypt(this.params.password);
           break;
         case '{USER_ID}':
-          parsed = this.credentials.userId.replace(/_/g, ' ');
+          parsed = this.params.userId.replace(/_/g, ' ');
           break;
         default:
           parsed = text;

@@ -1,12 +1,17 @@
 import { Time } from "@shared/types/time.type";
 import { ITask } from "src/interfaces/task.interface";
 import { DateTime } from 'luxon';
+import { IRunTask } from "src/interfaces/run-task.interface";
 
-export function shouldRunTask(task: ITask, time: Time): boolean {
+export function shouldRunTask(task: ITask, time: Time): IRunTask {
   console.log('mustRunTask ',);
   const isTime = task.signin.includes(time) || task.signout.includes(time);
   console.log('mustRunTask ', isTime)
-  return true; // TODO: Only for test
+  return {
+    // isTime: task.signin.includes(time) || task.signout.includes(time),
+    isTime: true, // TODO: Only for test
+    action: task.signin.includes(time) ? 'signin' : 'signout'
+  };
 }
 
 export function shouldExecuteTask(validationData: any, selectors: string): boolean {
@@ -53,9 +58,9 @@ function _extractUserData(userInfo: Array<string>) {
 
 function _isWorkingDay(workingDays: string) {
   const abbreviatedCurrentDay = DateTime.local().setZone('Europe/Madrid').toFormat('ccc').toUpperCase();
-  console.log('_isWorkingDay - currentDay', abbreviatedCurrentDay);
-  console.log('_isWorkingDay - workingdays', workingDays.split(','));
-  console.log('_isWorkingDay ', workingDays.split(',').some(day => day.toUpperCase() === abbreviatedCurrentDay));
+  // console.log('_isWorkingDay - currentDay', abbreviatedCurrentDay);
+  // console.log('_isWorkingDay - workingdays', workingDays.split(','));
+  // console.log('_isWorkingDay ', workingDays.split(',').some(day => day.toUpperCase() === abbreviatedCurrentDay));
   return workingDays.split(',').some(day => day.trim().toUpperCase() === abbreviatedCurrentDay);
 }
 

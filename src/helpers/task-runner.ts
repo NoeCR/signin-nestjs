@@ -6,6 +6,7 @@ import { ConfigService } from "src/config/services/config.service";
 import { shouldRunTask } from "src/validators/execute-task.validator";
 import { Time } from "@shared/types/time.type";
 import { EConfiguration } from "src/config/enum/config-keys.enum";
+import { IRunTask } from "src/interfaces/run-task.interface";
 @Injectable()
 export class TaskRunner {
   constructor(private readonly puppeteerService: PuppeteerService, readonly configService: ConfigService) { }
@@ -22,14 +23,15 @@ export class TaskRunner {
       const gmtTime = DateTime.local().setZone('Europe/Madrid').toFormat('T') as Time;
       // console.log('runTask ', { gmtTime })
       // TODO: Comprobar si se ha de relaizar la tarea
-      const isTimeToExecute = shouldRunTask(task, gmtTime);
-      if (!isTimeToExecute) return;
+      const initTask: IRunTask = shouldRunTask(task, gmtTime);
+      if (!initTask.isTime) return;
 
       // TODO: Inicializar Puppeteer
       await this.puppeteerService.startUp({
         username: task.username,
         password: task.password,
         userId: task.userId,
+        action: initTask.action,
       });
 
       console.log('Process has been started 2!');
