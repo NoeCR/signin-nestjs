@@ -8,4 +8,5 @@ export enum EAction {
   REQUEST = 'REQUEST',
   NAVIGATE = 'NAVIGATE',
   XPATH = 'XPATH',
+  EVALUATE = 'EVALUATE',
 }

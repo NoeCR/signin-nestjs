@@ -1,6 +1,5 @@
-export interface IPuppeteerParams {
-  username: string;
-  password: string;
-  userId: string;
+import { ICredentials } from "./credentials.interface";
+
+export interface IPuppeteerParams extends ICredentials {
   action: string;
 }

@@ -2,6 +2,8 @@ import { Time } from "@shared/types/time.type";
 import { ITask } from "src/interfaces/task.interface";
 import { DateTime } from 'luxon';
 import { IRunTask } from "src/interfaces/run-task.interface";
+import { EHoldedButtons } from "@shared/enum/holded-buttons.enum";
+import { ETimeControlAction } from "@shared/enum/time-control-action.enum";
 
 export function shouldRunTask(task: ITask, time: Time): IRunTask {
   console.log('mustRunTask ',);
@@ -10,26 +12,26 @@ export function shouldRunTask(task: ITask, time: Time): IRunTask {
   return {
     // isTime: task.signin.includes(time) || task.signout.includes(time),
     isTime: true, // TODO: Only for test
-    action: task.signin.includes(time) ? 'signin' : 'signout'
+    action: task.signin.includes(time) ? ETimeControlAction.SIGNIN : ETimeControlAction.SIGNOUT
   };
 }
 
 export function shouldExecuteTask(validationData: any, selectors: string): boolean {
-  // let execute = true;
   const requiredKeys = selectors.split(',');
-  console.log(requiredKeys);
+
   if (!requiredKeys.every(key => validationData.hasOwnProperty(key)))
     throw new Error(`Required keys: ${requiredKeys} not founded`);
 
-  const { list, userInfo } = validationData;
-  // console.log('mustExecuteTask ', list, userInfo);
+  const { list, userInfo, visibleButtonClassList, action } = validationData;
+  console.log('shouldExecuteTask ', visibleButtonClassList, action);
   const userData = _extractUserData(userInfo);
-  console.log('mustExecuteTask - userData ', userData);
+
   if (!_isWorkingDay(userData.workingDays)) return false;
 
   if (_isFreeDay(userData, list)) return false;
 
-  // console.log('mustRunTask ', isTime)
+  if (!_isActionRequired(visibleButtonClassList, action)) return false;
+  console.log('shouldExecuteTask TRUE!!');
   return true; // TODO: Only for test
 }
 
@@ -65,24 +67,28 @@ function _isWorkingDay(workingDays: string) {
 }
 
 function _isFreeDay(userData: { workingDays: string; workplace: string; employee: string; }, list: any) {
-  console.log('_isFreeDay Start! ')
-  console.log('_isFreeDay workplace ', `workplace#${userData.workplace}`)
-  console.log('_isFreeDay employee ', `employee#${userData.employee}`)
-  console.log(list[`workplace#${userData.workplace}`])
-  console.log(list[`employee#${userData.employee}`])
   const freeDays = [
     list[`workplace#${userData.workplace}`],
     list[`employee#${userData.employee}`],
   ]
     .filter(el => el !== undefined)
     .reduce((acc, current) => acc.concat(current), []);
-  console.log('_isFreeDay - freeDays ', freeDays);
+
   if (!freeDays.length) return false
 
   const currentDayOfMonth = DateTime.local().setZone('Europe/Madrid').toFormat('dd').toUpperCase();
-  console.log('_isFreeDay - currentDayOfMonth ', currentDayOfMonth);
-  console.log('_isFreeDay - result ', freeDays.some(freeDay => (freeDay.date === currentDayOfMonth && freeDay.status === 'accepted')));
+
   return freeDays.some(freeDay => (freeDay.date === currentDayOfMonth && freeDay.status === 'accepted'));
+}
+
+function _isActionRequired(visibleButtonClassList, action): boolean {
+  console.log('_isActionRequired ', visibleButtonClassList, action);
+  const requiredAction = visibleButtonClassList
+    .includes(EHoldedButtons.BTN_LOCK_IN)
+    ? ETimeControlAction.SIGNOUT
+    : ETimeControlAction.SIGNIN;
+  console.log('_isActionRequired - requiredAction ', requiredAction);
+  return requiredAction === action;
 }
 
 const userInfoKeys = {
@@ -90,6 +96,8 @@ const userInfoKeys = {
   WORKINGDAYS: 'data-workingdays',
   EMPLOYEE: 'data-employee',
 }
+
+
 
 
 

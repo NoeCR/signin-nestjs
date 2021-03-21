@@ -11,13 +11,14 @@ import { DateTime } from 'luxon';
 import { mockedCookies } from 'mock/assets/cookies-mock';
 import { shouldExecuteTask } from 'src/validators/execute-task.validator';
 import { IPuppeteerParams } from 'src/interfaces/puppeteer-params.interface';
+import { ICredentials } from 'src/interfaces/credentials.interface';
 
 
 @Injectable()
 export class PuppeteerService {
   private page: any;
   private browser: any;
-  private params: IPuppeteerParams;
+  private credentials: ICredentials;
   private cookies: IDomainCookies;
   private result: any;
 
@@ -49,10 +50,14 @@ export class PuppeteerService {
       this.page = await this.browser.newPage();
       await this.page.setCacheEnabled(false);
 
-      this.params = initParams;
-      console.log(initParams);
-      console.log(this._configService.get(EConfiguration.NODE_ENV));
-      console.log(...mockedCookies.cookies);
+      this.credentials = {
+        username: initParams.username,
+        password: initParams.password,
+        userId: initParams.userId
+      };
+
+      this.result.action = initParams.action;
+
       if (this._configService.get(EConfiguration.NODE_ENV) === 'test')
         await this.page.setCookie(...mockedCookies.cookies);
 
@@ -114,6 +119,10 @@ export class PuppeteerService {
         case EAction.XPATH:
           console.log(EAction.XPATH);
           await this.waitAndGetElementByXPath(await this._parseText(step.selector), step.returnAs);
+          break;
+        case EAction.EVALUATE:
+          console.log(EAction.EVALUATE);
+          await this.waitAndEvaluate(step.selector, step.returnAs);
           break;
         default:
           throw new Error('Action not implemented');
@@ -207,6 +216,24 @@ export class PuppeteerService {
     }
   }
 
+  async waitAndEvaluate(selector, returnAs) {
+    try {
+      await this.page.waitForSelector(selector);
+      console.log('waitAndEvaluate ', selector);
+      const classList = await this.page.evaluate((selector: string) => {
+        console.log(selector);
+        return [...document.querySelector(selector).classList]
+      }, selector);
+      console.log('waitAndEvaluate ', classList);
+      this.result[returnAs] = classList;
+
+      return;
+    } catch (error) {
+      console.log('waitAndEvaluate Error ', error);
+      throw new Error(`Could not evaluate selector: ${selector}`)
+    }
+  }
+
   async _parseText(text: string): Promise<string> {
     try {
       text = text.trim();
@@ -214,13 +241,13 @@ export class PuppeteerService {
 
       switch (text) {
         case '{USERNAME}':
-          parsed = this.params.username;
+          parsed = this.credentials.username;
           break;
         case '{PASSWORD}':
-          parsed = await this.cryptoService.decrypt(this.params.password);
+          parsed = await this.cryptoService.decrypt(this.credentials.password);
           break;
         case '{USER_ID}':
-          parsed = this.params.userId.replace(/_/g, ' ');
+          parsed = this.credentials.userId.replace(/_/g, ' ');
           break;
         default:
           parsed = text;

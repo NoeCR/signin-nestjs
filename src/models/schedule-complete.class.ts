@@ -32,7 +32,6 @@ export class ScheduleComplete extends Schedule {
         {
           action: EAction.COOKIES,
           selector: '__cfduid,PHPSESSID', // This selector is the names of the cookies to be processed.
-          returnAs: 'cookies'
         },
         {
           action: EAction.REQUEST,
@@ -49,8 +48,17 @@ export class ScheduleComplete extends Schedule {
           returnAs: 'userInfo'
         },
         {
+          action: EAction.NAVIGATE,
+          selector: 'home'
+        },
+        {
+          action: EAction.EVALUATE,
+          selector: 'button.ocult',
+          returnAs: 'visibleButtonClassList'
+        },
+        {
           action: EAction.VALIDATE,
-          selector: 'list,userInfo',
+          selector: 'list,userInfo,visibleButtonClassList,action',
           returnAs: 'execute'
         },
       ]
