@@ -82,12 +82,11 @@ function _isFreeDay(userData: { workingDays: string; workplace: string; employee
 }
 
 function _isActionRequired(visibleButtonClassList, action): boolean {
-  console.log('_isActionRequired ', visibleButtonClassList, action);
   const requiredAction = visibleButtonClassList
     .includes(EHoldedButtons.BTN_LOCK_IN)
     ? ETimeControlAction.SIGNOUT
     : ETimeControlAction.SIGNIN;
-  console.log('_isActionRequired - requiredAction ', requiredAction);
+
   return requiredAction === action;
 }
 

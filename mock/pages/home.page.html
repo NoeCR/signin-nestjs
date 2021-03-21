@@ -38,16 +38,10 @@
 
 <script>
   window.onload = function () {
-    console.log('Load window');
     const randomElement = Math.floor(Math.random() * 2) ? '.btnclockout' : '.btnclockin';
-    console.log(randomElement);
     const element = document.querySelector(`button${randomElement}`);
-    console.log(`button${randomElement}`);
-    console.log(element.classList);
+
     element.classList.add('ocult');
-
-
-    console.log(document.querySelector(`button.ocult`).classList);
   };
 </script>
 

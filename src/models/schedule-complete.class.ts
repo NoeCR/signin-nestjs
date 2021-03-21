@@ -61,6 +61,19 @@ export class ScheduleComplete extends Schedule {
           selector: 'list,userInfo,visibleButtonClassList,action',
           returnAs: 'execute'
         },
+        {
+          action: EAction.CLICK,
+          selector: 'visibleButtonClassList'
+        },
+        {
+          action: EAction.TAKE_SCREENSHOT,
+          selector: 'base64',
+          returnAs: 'base64string'
+        },
+        {
+          action: EAction.NOTIFY,
+          selector: 'discord',
+        },
       ]
     }
   }

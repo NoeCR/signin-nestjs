@@ -12,6 +12,8 @@ import { mockedCookies } from 'mock/assets/cookies-mock';
 import { shouldExecuteTask } from 'src/validators/execute-task.validator';
 import { IPuppeteerParams } from 'src/interfaces/puppeteer-params.interface';
 import { ICredentials } from 'src/interfaces/credentials.interface';
+import { EHoldedButtons } from '@shared/enum/holded-buttons.enum';
+import { NotificationService } from '../notification/notification.service';
 
 
 @Injectable()
@@ -26,6 +28,7 @@ export class PuppeteerService {
     private readonly _configService: ConfigService,
     private readonly cryptoService: CryptoService,
     private readonly holdedService: HoldedService,
+    private readonly _notificationService: NotificationService,
   ) {
     this.page = null;
     this.browser = null;
@@ -92,13 +95,22 @@ export class PuppeteerService {
     try {
       switch (step.action) {
         case EAction.CLICK:
-          await this.waitAndClick(step.selector);
+          console.log('Click on button? ', this.result.execute);
+          if (this.result.execute) {
+            const selector = this.result[step.selector]
+              .includes(EHoldedButtons.BTN_LOCK_IN)
+              ? `.${EHoldedButtons.BTN_LOCK_OUT}`
+              : `.${EHoldedButtons.BTN_LOCK_IN}`;
+
+            await this.waitAndClick(selector);
+          }
           break;
         case EAction.INNER_TEXT:
           await this.waitAndGetText(step.selector);
           break;
         case EAction.TAKE_SCREENSHOT:
-          // TODO: Implementar metodo para tomar captura de pantalla
+          console.log(EAction.TAKE_SCREENSHOT);
+          await this._takeScreenshot({ encoding: step.selector, returnAs: step.returnAs })
           break;
         case EAction.TYPE:
           await this.waitAndType(step.selector, step.text);
@@ -124,6 +136,10 @@ export class PuppeteerService {
           console.log(EAction.EVALUATE);
           await this.waitAndEvaluate(step.selector, step.returnAs);
           break;
+        case EAction.NOTIFY:
+          console.log(EAction.NOTIFY);
+          await this._prepareAndNotify(step.selector);
+          break;
         default:
           throw new Error('Action not implemented');
       }
@@ -133,32 +149,12 @@ export class PuppeteerService {
     }
   }
 
-  private async _prepareAndDoRequest(selector: string, returnAs: string) {
-    try {
-      switch (selector) {
-        case 'holded':
-          const month = DateTime.local().setZone('Europe/Madrid').toFormat('L');
-          const year = DateTime.local().setZone('Europe/Madrid').toFormat('y');
-
-          this.result[returnAs] = await this.holdedService.getHolidaysList(month, year, this.cookies);
-          // console.log('_prepareAndDoRequest finish', this.result[returnAs].data);
-          break;
-
-        default:
-          throw new Error('Service not implemented');
-      }
-
-      return;
-    }
-    catch (error) {
-      console.log('_prepareAndDoRequest ', error);
-    }
-  }
-
   async waitAndClick(selector) {
     try {
-      await this.page.waitForSelector(selector)
-      await this.page.click(selector)
+      console.log('waitAndClick ', selector);
+      await this.page.waitForSelector(selector);
+      console.log('waitAndClick CLICK ', selector);
+      await this.page.click(selector);
     } catch (error) {
       throw new Error(`Could not click into selector: ${selector}`)
     }
@@ -231,6 +227,58 @@ export class PuppeteerService {
     } catch (error) {
       console.log('waitAndEvaluate Error ', error);
       throw new Error(`Could not evaluate selector: ${selector}`)
+    }
+  }
+
+  private async _prepareAndDoRequest(selector: string, returnAs: string) {
+    try {
+      switch (selector) {
+        case 'holded':
+          const month = DateTime.local().setZone('Europe/Madrid').toFormat('L');
+          const year = DateTime.local().setZone('Europe/Madrid').toFormat('y');
+
+          this.result[returnAs] = await this.holdedService.getHolidaysList(month, year, this.cookies);
+
+          break;
+
+        default:
+          throw new Error('Service not implemented');
+      }
+
+      return;
+    }
+    catch (error) {
+      console.log('_prepareAndDoRequest ', error);
+    }
+  }
+
+  private async _prepareAndNotify(channel: string) {
+    try {
+      const currentDate = DateTime.local().setZone('Europe/Madrid').toFormat('FFF');
+      const filename = `${this.credentials.username}-${currentDate}-${this.result.action}`;
+
+      await this._notificationService.sendNotification({
+        channel,
+        filename,
+        base64string: this.result.base64string
+      });
+
+      return;
+    }
+    catch (error) {
+      console.log('_prepareAndNotify ', error);
+    }
+  }
+
+  async _takeScreenshot(opts) {
+    try {
+      console.log('_takeScreenshot ')
+      this.result[opts.returnAs] = await this.page.screenshot({ encoding: opts.encoding }) as string;
+      console.log('_takeScreenshot ', this.result[opts.returnAs])
+    }
+    catch (error) {
+      console.log('waitAndEvaluate Error ', error);
+      throw new Error(`Could not take screenshot: ${error}`)
     }
   }
 

@@ -10,6 +10,7 @@ import { PuppeteerService } from './services/puppeteer/puppeteer.service';
 import { CronService } from './services/cron/cron.service';
 import { CryptoService } from './services/crypto/crypto.service';
 import { HoldedService } from './services/holded/holded.service';
+import { NotificationService } from './services/notification/notification.service';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -20,7 +21,7 @@ import { HoldedService } from './services/holded/holded.service';
     }),
   ],
   controllers: [],
-  providers: [CronService, PuppeteerService, CryptoService, TaskRunner, HoldedService],
+  providers: [CronService, PuppeteerService, CryptoService, TaskRunner, HoldedService, NotificationService],
 })
 export class AppModule {
   static port: number | string;
