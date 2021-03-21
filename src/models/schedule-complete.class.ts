@@ -46,8 +46,13 @@ export class ScheduleComplete extends Schedule {
         {
           action: EAction.XPATH,
           selector: '{USER_ID}',
-          returnAs: 'ids'
-        }
+          returnAs: 'userInfo'
+        },
+        {
+          action: EAction.VALIDATE,
+          selector: 'list,userInfo',
+          returnAs: 'execute'
+        },
       ]
     }
   }

@@ -9,6 +9,7 @@ import { CryptoService } from '../crypto/crypto.service';
 import { HoldedService } from '../holded/holded.service';
 import { DateTime } from 'luxon';
 import { mockedCookies } from 'mock/assets/cookies-mock';
+import { shouldExecuteTask } from 'src/validators/execute-task.validator';
 
 interface ICredentials { username: string, password: string, userId: string };
 @Injectable()
@@ -81,38 +82,43 @@ export class PuppeteerService {
   }
 
   async doStep(step: IStep) {
-    switch (step.action) {
-      case EAction.CLICK:
-        await this.waitAndClick(step.selector);
-        break;
-      case EAction.INNER_TEXT:
-        await this.waitAndGetText(step.selector);
-        break;
-      case EAction.TAKE_SCREENSHOT:
-        // TODO: Implementar metodo para tomar captura de pantalla
-        break;
-      case EAction.TYPE:
-        await this.waitAndType(step.selector, step.text);
-        break;
-      case EAction.VALIDATE:
-        // TODO: validar requisitos
-        break;
-      case EAction.COOKIES:
-        await this.getDomainCookies(step.selector);
-        break;
-      case EAction.REQUEST:
-        await this._prepareAndDoRequest(step.selector, step.returnAs)
-        break;
-      case EAction.NAVIGATE:
-        const url = `${this._configService.get(EConfiguration.BASE_URL)}/${step.selector}`
-        await this.goTo(url);
-        break;
-      case EAction.XPATH:
-        console.log(EAction.XPATH);
-        await this.waitAndGetElementByXPath(await this._parseText(step.selector), step.returnAs);
-        break;
-      default:
-        throw new Error('Action not implemented');
+    try {
+      switch (step.action) {
+        case EAction.CLICK:
+          await this.waitAndClick(step.selector);
+          break;
+        case EAction.INNER_TEXT:
+          await this.waitAndGetText(step.selector);
+          break;
+        case EAction.TAKE_SCREENSHOT:
+          // TODO: Implementar metodo para tomar captura de pantalla
+          break;
+        case EAction.TYPE:
+          await this.waitAndType(step.selector, step.text);
+          break;
+        case EAction.VALIDATE:
+          this.result[step.returnAs] = shouldExecuteTask(this.result, step.selector);
+          break;
+        case EAction.COOKIES:
+          await this.getDomainCookies(step.selector);
+          break;
+        case EAction.REQUEST:
+          await this._prepareAndDoRequest(step.selector, step.returnAs)
+          break;
+        case EAction.NAVIGATE:
+          const url = `${this._configService.get(EConfiguration.BASE_URL)}/${step.selector}`
+          await this.goTo(url);
+          break;
+        case EAction.XPATH:
+          console.log(EAction.XPATH);
+          await this.waitAndGetElementByXPath(await this._parseText(step.selector), step.returnAs);
+          break;
+        default:
+          throw new Error('Action not implemented');
+      }
+    }
+    catch (error) {
+      console.log(error)
     }
   }
 
@@ -124,7 +130,7 @@ export class PuppeteerService {
           const year = DateTime.local().setZone('Europe/Madrid').toFormat('y');
 
           this.result[returnAs] = await this.holdedService.getHolidaysList(month, year, this.cookies);
-          console.log('_prepareAndDoRequest finish', this.result[returnAs].data);
+          // console.log('_prepareAndDoRequest finish', this.result[returnAs].data);
           break;
 
         default:
@@ -229,7 +235,7 @@ export class PuppeteerService {
     try {
       // Get all cookies for make API call
       this.cookies = await this.page._client.send('Network.getAllCookies');
-      console.log('getDomainCookies ', this.cookies);
+      // console.log('getDomainCookies ', this.cookies);
       this.processCookies(selectors);
       return;
     } catch (error) {

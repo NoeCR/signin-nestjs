@@ -20,7 +20,9 @@ export class HoldedService {
     console.log('getHolidaysList ', `${baseUrl}${path}${month}/${year}`);
     return this.httpService
       .post(`${baseUrl}${path}${month}/${year}`, null, { headers: this.httpHeaders })
-      .toPromise();
+      .toPromise()
+      .then(result => result.data.list)
+      .catch(err => console.log(err));
   }
 
   /**

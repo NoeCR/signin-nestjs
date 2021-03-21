@@ -3,10 +3,9 @@ import { PuppeteerService } from "src/services/puppeteer/puppeteer.service";
 import { DateTime } from 'luxon';
 import { scheduleStrategy } from "./schedule-strategy";
 import { ConfigService } from "src/config/services/config.service";
-import { mustRunTask } from "src/validators/execute-task.validator";
+import { shouldRunTask } from "src/validators/execute-task.validator";
 import { Time } from "@shared/types/time.type";
 import { EConfiguration } from "src/config/enum/config-keys.enum";
-import { IDomainCookies } from "src/interfaces/domain-cookies.interface";
 @Injectable()
 export class TaskRunner {
   constructor(private readonly puppeteerService: PuppeteerService, readonly configService: ConfigService) { }
@@ -23,7 +22,7 @@ export class TaskRunner {
       const gmtTime = DateTime.local().setZone('Europe/Madrid').toFormat('T') as Time;
       // console.log('runTask ', { gmtTime })
       // TODO: Comprobar si se ha de relaizar la tarea
-      const isTimeToExecute = mustRunTask(task, gmtTime);
+      const isTimeToExecute = shouldRunTask(task, gmtTime);
       if (!isTimeToExecute) return;
 
       // TODO: Inicializar Puppeteer

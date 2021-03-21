@@ -18,6 +18,7 @@ export abstract class Schedule {
   }
 
   getEnabledDays() {
+    // TODO: Move this config to data base register
     return {
       enableDays: [
         EWeekDays.MONDAY,
