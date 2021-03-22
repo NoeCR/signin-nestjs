@@ -5,12 +5,24 @@ import { ConfigService } from './config/services/config.service';
 import { EConfiguration } from './config/enum/config-keys.enum';
 
 import { TaskRunner } from './helpers/task-runner';
+
 // Services
 import { PuppeteerService } from './services/puppeteer/puppeteer.service';
 import { CronService } from './services/cron/cron.service';
 import { CryptoService } from './services/crypto/crypto.service';
 import { HoldedService } from './services/holded/holded.service';
-import { NotificationService } from './services/notification/notification.service';
+import { Notification } from './helpers/notification';
+import { DiscordService } from './services/discord/discord.service';
+
+const SERVICES = [
+  CronService,
+  PuppeteerService,
+  CryptoService,
+  TaskRunner,
+  HoldedService,
+  Notification,
+  DiscordService,
+];
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -21,7 +33,7 @@ import { NotificationService } from './services/notification/notification.servic
     }),
   ],
   controllers: [],
-  providers: [CronService, PuppeteerService, CryptoService, TaskRunner, HoldedService, NotificationService],
+  providers: [...SERVICES],
 })
 export class AppModule {
   static port: number | string;

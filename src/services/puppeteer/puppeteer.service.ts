@@ -13,7 +13,8 @@ import { shouldExecuteTask } from 'src/validators/execute-task.validator';
 import { IPuppeteerParams } from 'src/interfaces/puppeteer-params.interface';
 import { ICredentials } from 'src/interfaces/credentials.interface';
 import { EHoldedButtons } from '@shared/enum/holded-buttons.enum';
-import { NotificationService } from '../notification/notification.service';
+import { Notification } from '../../helpers/notification';
+import { notificationStrategy } from 'src/helpers/notification-strategy';
 
 
 @Injectable()
@@ -25,10 +26,10 @@ export class PuppeteerService {
   private result: any;
 
   constructor(
-    private readonly _configService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly cryptoService: CryptoService,
     private readonly holdedService: HoldedService,
-    private readonly _notificationService: NotificationService,
+    // private readonly _notificationService: NotificationService,
   ) {
     this.page = null;
     this.browser = null;
@@ -61,7 +62,7 @@ export class PuppeteerService {
 
       this.result.action = initParams.action;
 
-      if (this._configService.get(EConfiguration.NODE_ENV) === 'test')
+      if (this.configService.get(EConfiguration.NODE_ENV) === 'test')
         await this.page.setCookie(...mockedCookies.cookies);
 
       return;
@@ -82,7 +83,7 @@ export class PuppeteerService {
   async goTo(url: string): Promise<void> {
     try {
       await this.page.goto(url, {
-        timeout: parseInt(this._configService.get(EConfiguration.TIMEOUT)),
+        timeout: parseInt(this.configService.get(EConfiguration.TIMEOUT)),
         waitUntil: 'networkidle2'
       });
     } catch (error) {
@@ -125,7 +126,7 @@ export class PuppeteerService {
           await this._prepareAndDoRequest(step.selector, step.returnAs)
           break;
         case EAction.NAVIGATE:
-          const url = `${this._configService.get(EConfiguration.BASE_URL)}/${step.selector}`
+          const url = `${this.configService.get(EConfiguration.BASE_URL)}/${step.selector}`
           await this.goTo(url);
           break;
         case EAction.XPATH:
@@ -257,8 +258,9 @@ export class PuppeteerService {
       const currentDate = DateTime.local().setZone('Europe/Madrid').toFormat('FFF');
       const filename = `${this.credentials.username}-${currentDate}-${this.result.action}`;
 
-      await this._notificationService.sendNotification({
-        channel,
+      const _notificationService = new Notification(notificationStrategy(channel, this.configService));
+
+      await _notificationService.sendNotification({
         filename,
         base64string: this.result.base64string
       });
@@ -329,7 +331,7 @@ export class PuppeteerService {
       for (const cookie of this.cookies.cookies) {
         if (
           selectorNames.includes(cookie.name)
-          && cookie.domain.endsWith(this._configService.get(EConfiguration.DOMAIN))
+          && cookie.domain.endsWith(this.configService.get(EConfiguration.DOMAIN))
         ) {
           cookiesForRequest.push(cookie);
         }
