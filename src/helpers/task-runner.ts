@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { PuppeteerService } from "src/services/puppeteer/puppeteer.service";
 import { DateTime } from 'luxon';
 import { scheduleStrategy } from "./schedule-strategy";
@@ -7,13 +7,22 @@ import { shouldRunTask } from "src/validators/execute-task.validator";
 import { Time } from "@shared/types/time.type";
 import { EConfiguration } from "src/config/enum/config-keys.enum";
 import { IRunTask } from "src/interfaces/run-task.interface";
+import { AllExceptionsFilter } from "src/error/exceptions.filter";
 @Injectable()
 export class TaskRunner {
-  constructor(private readonly puppeteerService: PuppeteerService, readonly configService: ConfigService) { }
+  constructor(
+    private readonly puppeteerService: PuppeteerService,
+    private readonly configService: ConfigService,
+    private readonly errorService: AllExceptionsFilter
+  ) { }
 
   async runTask() {
     try {
       console.log('Process has been started!');
+      throw new Error(`${JSON.stringify({
+        statusCode: 4000,
+        message: 'Some Error happens here!!'
+      })}`);
       // TODO: Obtener instancia de la tarea a ejecutar
       const schedule = scheduleStrategy(this.configService);
       // console.log('schedule ', { schedule });
@@ -57,7 +66,8 @@ export class TaskRunner {
       // await this.puppeteerService.goTo('https://www.google.com/');
     }
     catch (error) {
-      console.log(error);
+      this.errorService.catch(error, null);
+      // console.log('Catch Error ', error);
     }
   }
 }

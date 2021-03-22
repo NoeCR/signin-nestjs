@@ -15,8 +15,9 @@ export class CronService {
      */
     @Cron(CronExpression.EVERY_MINUTE)
     async startProcess() {
-        console.log('CronService ', CronExpression.EVERY_QUARTER)
-        console.log('CronService isActiveTask ', this.isActiveTask())
+        console.log('CronService ');
+        // console.log('CronService ', CronExpression.EVERY_QUARTER)
+        // console.log('CronService isActiveTask ', this.isActiveTask())
         if (this.isActiveTask())
             await this.taskRunner.runTask();
     }

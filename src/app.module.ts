@@ -13,6 +13,8 @@ import { CryptoService } from './services/crypto/crypto.service';
 import { HoldedService } from './services/holded/holded.service';
 import { Notification } from './helpers/notification';
 import { DiscordService } from './services/discord/discord.service';
+import { APP_FILTER } from '@nestjs/core';
+import { AllExceptionsFilter } from './error/exceptions.filter';
 
 const SERVICES = [
   CronService,
@@ -33,7 +35,10 @@ const SERVICES = [
     }),
   ],
   controllers: [],
-  providers: [...SERVICES],
+  providers: [
+    AllExceptionsFilter,
+    ...SERVICES,
+  ],
 })
 export class AppModule {
   static port: number | string;
