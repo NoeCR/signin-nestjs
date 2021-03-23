@@ -4,11 +4,11 @@ import { DateTime } from 'luxon';
 import { IRunTask } from "src/interfaces/run-task.interface";
 import { EHoldedButtons } from "@shared/enum/holded-buttons.enum";
 import { ETimeControlAction } from "@shared/enum/time-control-action.enum";
+import { CustomError } from "@shared/error/models/custom-error.class";
 
 export function shouldRunTask(task: ITask, time: Time): IRunTask {
-  console.log('mustRunTask ',);
   const isTime = task.signin.includes(time) || task.signout.includes(time);
-  console.log('mustRunTask ', isTime)
+
   return {
     // isTime: task.signin.includes(time) || task.signout.includes(time),
     isTime: true, // TODO: Only for test
@@ -20,10 +20,10 @@ export function shouldExecuteTask(validationData: any, selectors: string): boole
   const requiredKeys = selectors.split(',');
 
   if (!requiredKeys.every(key => validationData.hasOwnProperty(key)))
-    throw new Error(`Required keys: ${requiredKeys} not founded`);
+    throw new CustomError(null, 'Validators', 'shouldExecuteTask', 'Required keys not founded', { requiredKeys });
 
   const { list, userInfo, visibleButtonClassList, action } = validationData;
-  console.log('shouldExecuteTask ', visibleButtonClassList, action);
+
   const userData = _extractUserData(userInfo);
 
   if (!_isWorkingDay(userData.workingDays)) return false;
@@ -31,8 +31,8 @@ export function shouldExecuteTask(validationData: any, selectors: string): boole
   if (_isFreeDay(userData, list)) return false;
 
   if (!_isActionRequired(visibleButtonClassList, action)) return false;
-  console.log('shouldExecuteTask TRUE!!');
-  return true; // TODO: Only for test
+
+  return true;
 }
 
 function _extractUserData(userInfo: Array<string>) {
@@ -60,9 +60,7 @@ function _extractUserData(userInfo: Array<string>) {
 
 function _isWorkingDay(workingDays: string) {
   const abbreviatedCurrentDay = DateTime.local().setZone('Europe/Madrid').toFormat('ccc').toUpperCase();
-  // console.log('_isWorkingDay - currentDay', abbreviatedCurrentDay);
-  // console.log('_isWorkingDay - workingdays', workingDays.split(','));
-  // console.log('_isWorkingDay ', workingDays.split(',').some(day => day.toUpperCase() === abbreviatedCurrentDay));
+
   return workingDays.split(',').some(day => day.trim().toUpperCase() === abbreviatedCurrentDay);
 }
 
@@ -74,7 +72,7 @@ function _isFreeDay(userData: { workingDays: string; workplace: string; employee
     .filter(el => el !== undefined)
     .reduce((acc, current) => acc.concat(current), []);
 
-  if (!freeDays.length) return false
+  if (!freeDays.length) return false;
 
   const currentDayOfMonth = DateTime.local().setZone('Europe/Madrid').toFormat('dd').toUpperCase();
 

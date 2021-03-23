@@ -1,4 +1,5 @@
 import { HttpService, Injectable } from '@nestjs/common';
+import { CustomError } from '@shared/error/models/custom-error.class';
 import { EConfiguration } from 'src/config/enum/config-keys.enum';
 import { ConfigService } from 'src/config/services/config.service';
 import { IDomainCookies } from 'src/interfaces/domain-cookies.interface';
@@ -17,12 +18,11 @@ export class HoldedService {
 
     this.setCookies(cookies);
 
-    console.log('getHolidaysList ', `${baseUrl}${path}${month}/${year}`);
     return this.httpService
       .post(`${baseUrl}${path}${month}/${year}`, null, { headers: this.httpHeaders })
       .toPromise()
       .then(result => result.data.list)
-      .catch(err => console.log(err));
+      .catch(error => new CustomError(error, 'HoldedService', 'getHolidaysList', 'The list of days off for the month and year could not be obtained.', { month, year }));
   }
 
   /**

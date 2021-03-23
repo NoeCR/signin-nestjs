@@ -3,25 +3,38 @@ import { IMessage } from 'src/interfaces/message.insterface';
 import { INotification } from 'src/interfaces/notification.interface';
 import * as Discord from 'discord.js';
 import { EConfiguration } from 'src/config/enum/config-keys.enum';
+import { CustomError } from '@shared/error/models/custom-error.class';
 
 export class DiscordService implements INotification {
-  constructor(private configService: ConfigService) { }
+  discord_id: string;
+  discord_token: string;
+
+  constructor(private configService: ConfigService) {
+    this.discord_id = this.configService.get(EConfiguration.DISCORD_ID);
+    this.discord_token = this.configService.get(EConfiguration.DISCORD_TOKEN);
+  }
 
   send(message: IMessage) {
-    const discord_id = this.configService.get(EConfiguration.DISCORD_ID);
-    const discord_token = this.configService.get(EConfiguration.DISCORD_TOKEN);
+    try {
+      const Hook = new Discord.WebhookClient(this.discord_id, this.discord_token);
 
-    const Hook = new Discord.WebhookClient(discord_id, discord_token);
+      const imageStream = Buffer.from(message.base64string, 'base64');
+      const attachment = new Discord.MessageAttachment(imageStream);
 
-    const imageStream = Buffer.from(message.base64string, 'base64');
-    const attachment = new Discord.MessageAttachment(imageStream);
+      const embed = new Discord.MessageEmbed()
+        .setTitle(message.filename)
+        .setDescription(this.randomBenderMessages())
+        .attachFiles([attachment]);
 
-    const embed = new Discord.MessageEmbed()
-      .setTitle(message.filename)
-      .setDescription(this.randomBenderMessages())
-      .attachFiles([attachment]);
+      Hook.send(embed);
+    }
+    catch (error) {
+      throw new CustomError(error, 'DiscordService', 'send', 'Message could not be sent', { message });
+    }
+  }
 
-    Hook.send(embed);
+  sendErrorMessage(message: CustomError) {
+    // TODO: implemented method
   }
 
   randomBenderMessages(): string {
