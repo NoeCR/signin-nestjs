@@ -14,7 +14,8 @@ import { IPuppeteerParams } from 'src/interfaces/puppeteer-params.interface';
 import { ICredentials } from 'src/interfaces/credentials.interface';
 import { EHoldedButtons } from '@shared/enum/holded-buttons.enum';
 import { Notification } from '../../helpers/notification';
-import { notificationStrategy } from 'src/helpers/notification-strategy';
+import { notificationFactory } from 'src/helpers/notification-factory';
+import { CustomError } from '@shared/error/models/custom-error.class';
 
 
 @Injectable()
@@ -29,7 +30,6 @@ export class PuppeteerService {
     private readonly configService: ConfigService,
     private readonly cryptoService: CryptoService,
     private readonly holdedService: HoldedService,
-    // private readonly _notificationService: NotificationService,
   ) {
     this.page = null;
     this.browser = null;
@@ -62,12 +62,13 @@ export class PuppeteerService {
 
       this.result.action = initParams.action;
 
+      // Only for test purpose
       if (this.configService.get(EConfiguration.NODE_ENV) === 'test')
         await this.page.setCookie(...mockedCookies.cookies);
 
       return;
     } catch (error) {
-      throw new Error('Start UP failed!')
+      throw new CustomError(error, 'PuppeteerService', 'startUp', 'Start UP failed!');
     }
   }
 
@@ -76,7 +77,7 @@ export class PuppeteerService {
       this.page.close();
       this.browser.close();
     } catch (error) {
-      throw new Error('Close failed!')
+      throw new CustomError(error, 'PuppeteerService', 'close', 'close failed!');
     }
   }
 
@@ -87,8 +88,7 @@ export class PuppeteerService {
         waitUntil: 'networkidle2'
       });
     } catch (error) {
-      console.log('goTo Error ', error);
-      throw new Error(`Error`)
+      throw new CustomError(error, 'PuppeteerService', 'goTo', 'Unable to access the url', { url });
     }
   }
 
@@ -96,7 +96,6 @@ export class PuppeteerService {
     try {
       switch (step.action) {
         case EAction.CLICK:
-          console.log('Click on button? ', this.result.execute);
           if (this.result.execute) {
             const selector = this.result[step.selector]
               .includes(EHoldedButtons.BTN_LOCK_IN)
@@ -110,7 +109,6 @@ export class PuppeteerService {
           await this.waitAndGetText(step.selector);
           break;
         case EAction.TAKE_SCREENSHOT:
-          console.log(EAction.TAKE_SCREENSHOT);
           await this._takeScreenshot({ encoding: step.selector, returnAs: step.returnAs })
           break;
         case EAction.TYPE:
@@ -130,34 +128,30 @@ export class PuppeteerService {
           await this.goTo(url);
           break;
         case EAction.XPATH:
-          console.log(EAction.XPATH);
           await this.waitAndGetElementByXPath(await this._parseText(step.selector), step.returnAs);
           break;
         case EAction.EVALUATE:
-          console.log(EAction.EVALUATE);
           await this.waitAndEvaluate(step.selector, step.returnAs);
           break;
         case EAction.NOTIFY:
-          console.log(EAction.NOTIFY);
           await this._prepareAndNotify(step.selector);
           break;
         default:
-          throw new Error('Action not implemented');
+          throw new CustomError(null, 'PuppeteerService', 'doStep', 'Action not implemented', { action: step.action });
       }
     }
     catch (error) {
-      console.log(error)
+      throw new CustomError(error, 'PuppeteerService', 'doStep');
     }
   }
 
   async waitAndClick(selector) {
     try {
-      console.log('waitAndClick ', selector);
       await this.page.waitForSelector(selector);
-      console.log('waitAndClick CLICK ', selector);
+
       await this.page.click(selector);
     } catch (error) {
-      throw new Error(`Could not click into selector: ${selector}`)
+      throw new CustomError(error, 'PuppeteerService', 'waitAndClick', 'Selector not accessible', { selector });
     }
   }
 
@@ -167,7 +161,7 @@ export class PuppeteerService {
 
       await this.page.type(selector, await this._parseText(text));
     } catch (error) {
-      throw new Error(`Could not type '${text}', into selector: ${selector}`)
+      throw new CustomError(error, 'PuppeteerService', 'waitAndType', 'Cannot write in the selector', { selector, text });
     }
   }
 
@@ -177,7 +171,7 @@ export class PuppeteerService {
 
       return await this.page.$eval(selector, el => el.innerHTML);
     } catch (error) {
-      throw new Error(`Could not get text from selector: ${selector}`)
+      throw new CustomError(error, 'PuppeteerService', 'waitAndGetText', 'Unable to obtain selector text', { selector });
     }
   }
 
@@ -187,7 +181,7 @@ export class PuppeteerService {
 
       return await this.page.$$eval(selector, el => el.length);
     } catch (error) {
-      throw new Error(`Could not get count from selector: ${selector}`)
+      throw new CustomError(error, 'PuppeteerService', 'waitAndGetCount', 'Could not get count from selector', { selector });
     }
   }
 
@@ -208,26 +202,23 @@ export class PuppeteerService {
 
       return;
     } catch (error) {
-      console.log('waitAndGetElementByXPath Error ', error);
-      throw new Error(`Could not get count from selector: ${selector}`)
+      throw new CustomError(error, 'PuppeteerService', 'waitAndGetElementByXPath', 'Could not get content from selector', { selector });
     }
   }
 
   async waitAndEvaluate(selector, returnAs) {
     try {
       await this.page.waitForSelector(selector);
-      console.log('waitAndEvaluate ', selector);
+
       const classList = await this.page.evaluate((selector: string) => {
-        console.log(selector);
         return [...document.querySelector(selector).classList]
       }, selector);
-      console.log('waitAndEvaluate ', classList);
+
       this.result[returnAs] = classList;
 
       return;
     } catch (error) {
-      console.log('waitAndEvaluate Error ', error);
-      throw new Error(`Could not evaluate selector: ${selector}`)
+      throw new CustomError(error, 'PuppeteerService', 'waitAndEvaluate', 'Could not evaluate selector', { selector });
     }
   }
 
@@ -243,13 +234,13 @@ export class PuppeteerService {
           break;
 
         default:
-          throw new Error('Service not implemented');
+          throw new CustomError(null, 'PuppeteerService', '_prepareAndDoRequest', 'Service not implemented', { service: selector });
       }
 
       return;
     }
     catch (error) {
-      console.log('_prepareAndDoRequest ', error);
+      throw new CustomError(error, 'PuppeteerService', '_prepareAndDoRequest');
     }
   }
 
@@ -258,7 +249,7 @@ export class PuppeteerService {
       const currentDate = DateTime.local().setZone('Europe/Madrid').toFormat('FFF');
       const filename = `${this.credentials.username}-${currentDate}-${this.result.action}`;
 
-      const _notificationService = new Notification(notificationStrategy(channel, this.configService));
+      const _notificationService = new Notification(notificationFactory(channel, this.configService));
 
       await _notificationService.sendNotification({
         filename,
@@ -268,19 +259,16 @@ export class PuppeteerService {
       return;
     }
     catch (error) {
-      console.log('_prepareAndNotify ', error);
+      throw new CustomError(error, 'PuppeteerService', '_prepareAndNotify', 'Channel not implemented', { channel });
     }
   }
 
   async _takeScreenshot(opts) {
     try {
-      console.log('_takeScreenshot ')
       this.result[opts.returnAs] = await this.page.screenshot({ encoding: opts.encoding }) as string;
-      console.log('_takeScreenshot ', this.result[opts.returnAs])
     }
     catch (error) {
-      console.log('waitAndEvaluate Error ', error);
-      throw new Error(`Could not take screenshot: ${error}`)
+      throw new CustomError(error, 'PuppeteerService', '_takeScreenshot', 'Could not take screenshot', { opts });
     }
   }
 
@@ -306,7 +294,7 @@ export class PuppeteerService {
       return parsed;
     }
     catch (error) {
-      console.log(error);
+      throw new CustomError(error, 'PuppeteerService', '_parseText', 'Text cannot be transformed', { text });
     }
   }
 
@@ -314,17 +302,16 @@ export class PuppeteerService {
     try {
       // Get all cookies for make API call
       this.cookies = await this.page._client.send('Network.getAllCookies');
-      // console.log('getDomainCookies ', this.cookies);
+
       this.processCookies(selectors);
       return;
     } catch (error) {
-      console.log(error);
+      throw new CustomError(error, 'PuppeteerService', 'getDomainCookies', 'Cookies could not be obtained', { cookieNames: selectors });
     }
   }
 
   private processCookies(selectors: string): void {
     try {
-      console.log('processCookies ')
       const selectorNames = selectors.split(',');
       const cookiesForRequest = [];
 
@@ -339,10 +326,10 @@ export class PuppeteerService {
 
       this.cookies.cookies = cookiesForRequest;
 
-      console.log('processCookies Cookies Filtered ', this.cookies);
+      return;
     }
     catch (error) {
-      console.log('processCookies ', error)
+      throw new CustomError(error, 'PuppeteerService', 'processCookies', 'Cookies could not be processed', { selectors });
     }
   }
 }

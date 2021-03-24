@@ -4,6 +4,7 @@ import { createCipheriv, createDecipheriv, scrypt } from 'crypto';
 import { promisify } from 'util';
 import { EConfiguration } from 'src/config/enum/config-keys.enum';
 import { ConfigService } from 'src/config/services/config.service';
+import { CustomError } from '@shared/error/models/custom-error.class';
 
 @Injectable()
 export class CryptoService {
@@ -26,7 +27,7 @@ export class CryptoService {
       return `${cipher.update(text, 'utf8', 'hex')}${cipher.final('hex')}`;
     }
     catch (error) {
-      console.log(error);
+      throw new CustomError(error, 'CryptoService', 'cipher');
     }
   }
 
@@ -44,7 +45,7 @@ export class CryptoService {
       return decryptedText.toString();
     }
     catch (error) {
-      console.log(error);
+      throw new CustomError(error, 'CryptoService', 'decrypt');
     }
   }
 }

@@ -3,25 +3,59 @@ import { IMessage } from 'src/interfaces/message.insterface';
 import { INotification } from 'src/interfaces/notification.interface';
 import * as Discord from 'discord.js';
 import { EConfiguration } from 'src/config/enum/config-keys.enum';
+import { CustomError } from '@shared/error/models/custom-error.class';
+import { EComponents } from '@shared/enum/components.enum';
 
 export class DiscordService implements INotification {
-  constructor(private configService: ConfigService) { }
+
+  private Hook: Discord.WebhookClient;
+
+  constructor(private configService: ConfigService) {
+    console.log('DiscordService - configService ', configService);
+    if (configService !== undefined) {
+      const discordId = this.configService.get(EConfiguration.DISCORD_ID);
+      const discordToken = this.configService.get(EConfiguration.DISCORD_TOKEN);
+
+      this.Hook = new Discord.WebhookClient(discordId, discordToken);
+
+    }
+  }
 
   send(message: IMessage) {
-    const discord_id = this.configService.get(EConfiguration.DISCORD_ID);
-    const discord_token = this.configService.get(EConfiguration.DISCORD_TOKEN);
+    try {
+      const imageStream = Buffer.from(message.base64string, 'base64');
+      const attachment = new Discord.MessageAttachment(imageStream);
 
-    const Hook = new Discord.WebhookClient(discord_id, discord_token);
+      const embed = new Discord.MessageEmbed()
+        .setTitle(message.filename)
+        .setDescription(this.randomBenderMessages())
+        .attachFiles([attachment]);
 
-    const imageStream = Buffer.from(message.base64string, 'base64');
-    const attachment = new Discord.MessageAttachment(imageStream);
+      this.Hook.send(embed);
+    }
+    catch (error) {
+      throw new CustomError(error, 'DiscordService', 'send', 'Message could not be sent', { message });
+    }
+  }
+
+  sendErrorMessage(error: CustomError) {
+    const groupId = this.configService.get(EConfiguration.DISCORD_GROUP_ID);
+    const groupMessage = `<@&${groupId}> :warning:`;
 
     const embed = new Discord.MessageEmbed()
-      .setTitle(message.filename)
-      .setDescription(this.randomBenderMessages())
-      .attachFiles([attachment]);
+      .setTitle('Error')
+      .setDescription(error.message)
+      .setURL(this.getRepositoryUrl(error.component))
+      .addFields([
+        { name: 'Alert', value: groupMessage },
+        { name: 'Component', value: error.component },
+        { name: 'Method', value: error.method },
+        { name: 'Message', value: error.message },
+        { name: 'Data', value: JSON.stringify(error.data) },
+        { name: 'Timestamp', value: new Date().toISOString() },
+      ]);
 
-    Hook.send(embed);
+    this.Hook.send(embed);
   }
 
   randomBenderMessages(): string {
@@ -46,5 +80,26 @@ export class DiscordService implements INotification {
     const selectedIndex = Math.floor(Math.random() * benderSentencesEsp.length);
 
     return benderSentencesEsp[selectedIndex];
+  }
+
+  getRepositoryUrl(component: string): string {
+    let urlRepository = this.configService.get(EConfiguration.BASE_REPOSITORY_URL);
+    let path = '';
+    switch (component) {
+      case EComponents.CRON:
+        path = '/blob/master/src/services/cron/cron.service.ts';
+      case EComponents.DISCORD:
+        path = '/blob/master/src/services/discord/discord.service.ts';
+      case EComponents.HELPER:
+        path = '/blob/master/src/helpers';
+      case EComponents.HOLDED:
+        path = '/blob/master/src/services/holded/holded.service.ts';
+      case EComponents.PUPPETEER:
+        path = '/blob/master/src/services/puppeteer/puppeteer.service.ts';
+      case EComponents.TASK:
+        path = '/blob/master/src/helpers/task-runner.ts';
+    }
+
+    return `${urlRepository}${path}`;
   }
 }

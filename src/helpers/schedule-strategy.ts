@@ -1,4 +1,5 @@
 import { ESchedule } from "@shared/enum/schedule.enum";
+import { CustomError } from "@shared/error/models/custom-error.class";
 import { EConfiguration } from "src/config/enum/config-keys.enum";
 import { ConfigService } from "src/config/services/config.service";
 import { ScheduleComplete } from "src/models/schedule-complete.class";
@@ -12,6 +13,6 @@ export function scheduleStrategy(configService: ConfigService): Schedule {
     case ESchedule.REDUCED:
       return new ScheduleReduced(configService);
     default:
-      throw new Error('Schedule not implemented');
+      throw new CustomError(null, 'Helper', 'scheduleStrategy', 'Schedule not implemented', { schedule: configService.get(EConfiguration.SCHEDULE) });
   }
 }
