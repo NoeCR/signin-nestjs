@@ -30,7 +30,6 @@ export class PuppeteerService {
     private readonly configService: ConfigService,
     private readonly cryptoService: CryptoService,
     private readonly holdedService: HoldedService,
-    // private readonly _notificationService: NotificationService,
   ) {
     this.page = null;
     this.browser = null;

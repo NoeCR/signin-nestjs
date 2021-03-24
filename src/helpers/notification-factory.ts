@@ -9,6 +9,6 @@ export function notificationFactory(channel: string, configService: ConfigServic
     case EChannel.DISCORD:
       return new DiscordService(configService);
     default:
-      throw new CustomError(null, 'Helpers', 'notificationFactory', 'Channel not implemented', { channel });
+      throw new CustomError(null, 'Helper', 'notificationFactory', 'Channel not implemented', { channel });
   }
 }

@@ -25,8 +25,8 @@ const SERVICES = [
 ];
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     ConfigModule,
+    ScheduleModule.forRoot(),
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,
@@ -41,6 +41,6 @@ export class AppModule {
   static port: number | string;
 
   constructor(private readonly _configService: ConfigService) {
-    AppModule.port = this._configService.get(EConfiguration.PORT)
+    AppModule.port = this._configService.get(EConfiguration.PORT);
   }
 }
