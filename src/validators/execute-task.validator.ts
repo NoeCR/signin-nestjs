@@ -10,8 +10,7 @@ export function shouldRunTask(task: ITask, time: Time): IRunTask {
   const isTime = task.signin.includes(time) || task.signout.includes(time);
 
   return {
-    // isTime: task.signin.includes(time) || task.signout.includes(time),
-    isTime: true, // TODO: Only for test
+    isTime,
     action: task.signin.includes(time) ? ETimeControlAction.SIGNIN : ETimeControlAction.SIGNOUT
   };
 }

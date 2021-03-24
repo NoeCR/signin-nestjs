@@ -11,8 +11,7 @@ export class DiscordService implements INotification {
   private Hook: Discord.WebhookClient;
 
   constructor(private configService: ConfigService) {
-    console.log('DiscordService - configService ', configService);
-    if (configService !== undefined) {
+    if (configService !== undefined) { // Only it is undefined when APP it's started
       const discordId = this.configService.get(EConfiguration.DISCORD_ID);
       const discordToken = this.configService.get(EConfiguration.DISCORD_TOKEN);
 

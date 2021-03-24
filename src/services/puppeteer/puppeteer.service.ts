@@ -39,7 +39,7 @@ export class PuppeteerService {
   async startUp(initParams: IPuppeteerParams) {
     try {
       this.browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         slowMo: 10,
         defaultViewport: null,
         args: [
@@ -265,7 +265,10 @@ export class PuppeteerService {
 
   async _takeScreenshot(opts) {
     try {
-      this.result[opts.returnAs] = await this.page.screenshot({ encoding: opts.encoding }) as string;
+      this.result[opts.returnAs] = await this.page.screenshot({
+        encoding: opts.encoding,
+        fullPage: true,
+      }) as string;
     }
     catch (error) {
       throw new CustomError(error, 'PuppeteerService', '_takeScreenshot', 'Could not take screenshot', { opts });
