@@ -13,6 +13,7 @@ import { CryptoService } from './services/crypto/crypto.service';
 import { HoldedService } from './services/holded/holded.service';
 import { Notification } from './helpers/notification';
 import { DiscordService } from './services/discord/discord.service';
+import { CryptoController } from './controllers/crypto/crypto.controller';
 
 const SERVICES = [
   CronService,
@@ -32,7 +33,7 @@ const SERVICES = [
       maxRedirects: 5,
     }),
   ],
-  controllers: [],
+  controllers: [CryptoController],
   providers: [
     ...SERVICES,
   ],
