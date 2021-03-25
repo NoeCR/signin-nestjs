@@ -5,9 +5,11 @@ import { INotification } from "src/interfaces/notification.interface";
 
 export function notificationFactory(channel: string, configService: ConfigService): Promise<INotification> {
   const DiscordPath = "src/services/discord/discord.service";
+  // setTimeout(() => {}, 0); Not work
   switch (channel) {
     case EChannel.DISCORD:
-      return import(DiscordPath).then( DiscordService => new DiscordService(configService));
+      return;
+      // return import(DiscordPath).then( DiscordService => new DiscordService(configService)); // Not solve problem
     default:
       throw new CustomError(null, 'Helper', 'notificationFactory', 'Channel not implemented', { channel });
   }
