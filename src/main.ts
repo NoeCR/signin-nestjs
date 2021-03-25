@@ -9,6 +9,7 @@ async function bootstrap() {
   const APP_VERSION = process.env.npm_package_version;
 
   app.setGlobalPrefix('v1');
+  app.enableCors();
 
   const options = new DocumentBuilder()
     .setTitle(APP_NAME)
@@ -20,6 +21,6 @@ async function bootstrap() {
 
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(AppModule.port);
+  await app.listen(AppModule.port || 3000);
 }
 bootstrap();

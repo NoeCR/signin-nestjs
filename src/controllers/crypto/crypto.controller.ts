@@ -10,9 +10,7 @@ export class CryptoController {
   constructor(private cryptoService: CryptoService) { }
 
   @Post()
-  @ApiBody({
-    description: 'Encrypt the text entered',
-  })
+  @ApiBody({ description: 'Encrypt the text entered' })
   encrypt(@Body() cypherText: CypherTextDto) {
     return this.cryptoService.cipher(cypherText.text);
   }
