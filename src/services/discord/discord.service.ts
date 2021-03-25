@@ -11,13 +11,10 @@ export class DiscordService implements INotification {
   private Hook: Discord.WebhookClient;
 
   constructor(private configService: ConfigService) {
-    if (configService !== undefined) { // Only it is undefined when APP it's started
-      const discordId = this.configService.get(EConfiguration.DISCORD_ID);
-      const discordToken = this.configService.get(EConfiguration.DISCORD_TOKEN);
+    const discordId = this.configService?.get(EConfiguration.DISCORD_ID);
+    const discordToken = this.configService?.get(EConfiguration.DISCORD_TOKEN);
 
-      this.Hook = new Discord.WebhookClient(discordId, discordToken);
-
-    }
+    this.Hook = new Discord.WebhookClient(discordId, discordToken);
   }
 
   send(message: IMessage) {
