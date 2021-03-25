@@ -249,7 +249,7 @@ export class PuppeteerService {
       const currentDate = DateTime.local().setZone('Europe/Madrid').toFormat('FFF');
       const filename = `${this.credentials.username}-${currentDate}-${this.result.action}`;
 
-      const _notificationService = new Notification(notificationFactory(channel, this.configService));
+      const _notificationService = new Notification(await notificationFactory(channel, this.configService));
 
       await _notificationService.sendNotification({
         filename,

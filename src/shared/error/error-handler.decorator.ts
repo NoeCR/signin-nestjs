@@ -23,7 +23,7 @@ export function ErrorHandler(report = true) {
           const configService: ConfigService = this.configService;
           const channel = configService.get(EConfiguration.DEFAULT_CHANNEL);
 
-          const _notificationService = new Notification(notificationFactory(channel, configService));
+          const _notificationService = new Notification(await notificationFactory(channel, configService));
 
           await _notificationService.sendErrorNotification(error);
         }
