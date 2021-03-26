@@ -44,6 +44,7 @@ export class TaskRunner {
       }
     }
     catch (error) {
+
       throw new CustomError(error, 'TaskRunner', 'runTask', 'The execution of the task could not be carried out.');
     }
   }

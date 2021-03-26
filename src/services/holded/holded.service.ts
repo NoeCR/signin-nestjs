@@ -26,7 +26,7 @@ export class HoldedService {
   }
 
   /**
-   * 
+   *
    * @param {IDomainCookies} cookies Cookies filtered
    * @example 'Cookie: lang=es; __cfduid=d3d796f2d8f0caadb9accf7d2efdc5dc41615662227; PHPSESSID=05bd4e94d70529394945ca716f9e8034'
    */
