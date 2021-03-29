@@ -1,8 +1,12 @@
-import { IsString, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CypherTextDto {
 
-  @IsString()
-  @Length(1, 30)
+  @ApiProperty({
+    description: 'Intro value',
+    minLength: 1,
+    maxLength: 30,
+    type: 'string'
+  })
   text: string;
 }
