@@ -1,14 +1,24 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { LoggerMessage } from './models/logger-message.class';
 
 @Injectable()
 export class LoggerService {
-  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) {}
+  constructor(@Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger) { }
 
-  debug(message?: string, component?: string): void {
-    this.logger.debug(message)
+  debug(loggerMessage: LoggerMessage): void {
+    this.logger.debug(loggerMessage);
   };
-  info(message: string, component: string): void {};
-  warn(message: string, component: string): void {};
-  error(message: string, component: string): void {};
+
+  log(loggerMessage: LoggerMessage): void {
+    this.logger.log(loggerMessage);
+  };
+
+  warn(loggerMessage: LoggerMessage): void {
+    this.logger.warn(loggerMessage);
+  };
+
+  error(loggerMessage: LoggerMessage): void {
+    this.logger.error(loggerMessage);
+  };
 }

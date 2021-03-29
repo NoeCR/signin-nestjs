@@ -16,6 +16,8 @@ import { EHoldedButtons } from '@shared/enum/holded-buttons.enum';
 import { Notification } from '../../helpers/notification';
 import { notificationFactory } from 'src/helpers/notification-factory';
 import { CustomError } from '@shared/error/models/custom-error.class';
+import { LoggerService } from '@shared/logger/logger.service';
+import { LoggerMessage } from '@shared/logger/models/logger-message.class';
 
 
 @Injectable()
@@ -30,6 +32,7 @@ export class PuppeteerService {
     private readonly configService: ConfigService,
     private readonly cryptoService: CryptoService,
     private readonly holdedService: HoldedService,
+    private readonly loggerService: LoggerService,
   ) {
     this.page = null;
     this.browser = null;
@@ -38,7 +41,7 @@ export class PuppeteerService {
 
   async startUp(initParams: IPuppeteerParams) {
     try {
-      this.browser = await puppeteer.launch({
+      const launchOptions = {
         headless: true,
         slowMo: 10,
         defaultViewport: null,
@@ -49,7 +52,13 @@ export class PuppeteerService {
           "--disable-web-security",
           "--window-size=1920,1080"
         ]
-      });
+      };
+
+      this.loggerService.log(
+        new LoggerMessage('PuppeteerService start up', 'Service.PuppeteerService.startUp.launch', launchOptions)
+      );
+
+      this.browser = await puppeteer.launch();
 
       this.page = await this.browser.newPage();
       await this.page.setCacheEnabled(false);
@@ -68,32 +77,62 @@ export class PuppeteerService {
 
       return;
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'startUp', 'Start UP failed!');
+      const msg = 'Start UP failed!';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.startUp', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'startUp', msg);
     }
   }
 
   async close() {
     try {
+      this.loggerService.log(
+        new LoggerMessage('PuppeteerService close', 'Service.PuppeteerService.close')
+      );
+
       this.page.close();
       this.browser.close();
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'close', 'close failed!');
+      const msg = 'close failed!';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.close', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'close', msg);
     }
   }
 
   async goTo(url: string): Promise<void> {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Navigate to the url', 'Service.PuppeteerService.goTo', { url })
+      );
+
       await this.page.goto(url, {
         timeout: parseInt(this.configService.get(EConfiguration.TIMEOUT)),
         waitUntil: 'networkidle2'
       });
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'goTo', 'Unable to access the url', { url });
+      const msg = 'Unable to access the url';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.close', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'goTo', msg, { url });
     }
   }
 
   async doStep(step: IStep) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Do step', 'Service.PuppeteerService.doStep', { step })
+      );
+
       switch (step.action) {
         case EAction.CLICK:
           if (this.result.execute) {
@@ -141,52 +180,102 @@ export class PuppeteerService {
       }
     }
     catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'doStep');
+      const msg = 'Step could not be performed';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.doStep', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'doStep', msg);
     }
   }
 
-  async waitAndClick(selector) {
+  async waitAndClick(selector: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Wait And Click', 'Service.PuppeteerService.waitAndClick', { selector })
+      );
+
       await this.page.waitForSelector(selector);
 
       await this.page.click(selector);
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'waitAndClick', 'Selector not accessible', { selector });
+      const msg = 'Selector not accessible';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.waitAndClick', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'waitAndClick', msg, { selector });
     }
   }
 
-  async waitAndType(selector, text) {
+  async waitAndType(selector: string, text: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Wait And Type', 'Service.PuppeteerService.waitAndType', { selector, text })
+      );
+
       await this.page.waitForSelector(selector);
 
       await this.page.type(selector, await this._parseText(text));
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'waitAndType', 'Cannot write in the selector', { selector, text });
+      const msg = 'Cannot write in the selector';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.waitAndType', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'waitAndType', msg, { selector, text });
     }
   }
 
-  async waitAndGetText(selector) {
+  async waitAndGetText(selector: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Wait And Get Text', 'Service.PuppeteerService.waitAndGetText', { selector })
+      );
+
       await this.page.waitForSelector(selector);
 
       return await this.page.$eval(selector, el => el.innerHTML);
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'waitAndGetText', 'Unable to obtain selector text', { selector });
+      const msg = 'Unable to obtain selector text';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.waitAndGetText', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'waitAndGetText', msg, { selector });
     }
   }
 
-  async waitAndGetCount(selector) {
+  async waitAndGetCount(selector: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Wait And Get Count', 'Service.PuppeteerService.waitAndGetCount', { selector })
+      );
+
       await this.page.waitForSelector(selector);
 
       return await this.page.$$eval(selector, el => el.length);
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'waitAndGetCount', 'Could not get count from selector', { selector });
+      const msg = 'Could not get count from selector';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.waitAndGetCount', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'waitAndGetCount', msg, { selector });
     }
   }
 
-  async waitAndGetElementByXPath(selector, returnAs) {
+  async waitAndGetElementByXPath(selector: string, returnAs: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Wait And Get Element By XPath', 'Service.PuppeteerService.waitAndGetElementByXPath', { selector, returnAs })
+      );
+
       await this.page.waitForXPath(`//span[contains(.,'${selector}')]`);
 
       // Get div that contains span with user identifier
@@ -202,12 +291,22 @@ export class PuppeteerService {
 
       return;
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'waitAndGetElementByXPath', 'Could not get content from selector', { selector });
+      const msg = 'Could not get content from selector';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.waitAndGetElementByXPath', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'waitAndGetElementByXPath', msg, { selector });
     }
   }
 
-  async waitAndEvaluate(selector, returnAs) {
+  async waitAndEvaluate(selector: string, returnAs: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Wait And Evaluate', 'Service.PuppeteerService.waitAndEvaluate', { selector, returnAs })
+      );
+
       await this.page.waitForSelector(selector);
 
       const classList = await this.page.evaluate((selector: string) => {
@@ -218,12 +317,22 @@ export class PuppeteerService {
 
       return;
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'waitAndEvaluate', 'Could not evaluate selector', { selector });
+      const msg = 'Could not evaluate selector';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.waitAndEvaluate', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'waitAndEvaluate', msg, { selector });
     }
   }
 
   private async _prepareAndDoRequest(selector: string, returnAs: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Prepare And Do Request', 'Service.PuppeteerService._prepareAndDoRequest', { selector, returnAs })
+      );
+
       switch (selector) {
         case 'holded':
           const month = DateTime.local().setZone('Europe/Madrid').toFormat('L');
@@ -240,16 +349,26 @@ export class PuppeteerService {
       return;
     }
     catch (error) {
+      const msg = 'The request could not be made';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService._prepareAndDoRequest', error)
+      );
+
       throw new CustomError(error, 'PuppeteerService', '_prepareAndDoRequest');
     }
   }
 
   private async _prepareAndNotify(channel: string) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Prepare And Notify', 'Service.PuppeteerService._prepareAndNotify', { channel })
+      );
+
       const currentDate = DateTime.local().setZone('Europe/Madrid').toFormat('FFF');
       const filename = `${this.credentials.username}-${currentDate}-${this.result.action}`;
 
-      const _notificationService = new Notification(notificationFactory(channel, this.configService));
+      const _notificationService = new Notification(notificationFactory(channel, this.configService, this.loggerService));
 
       await _notificationService.sendNotification({
         filename,
@@ -259,24 +378,44 @@ export class PuppeteerService {
       return;
     }
     catch (error) {
-      throw new CustomError(error, 'PuppeteerService', '_prepareAndNotify', 'Channel not implemented', { channel });
+      const msg = 'Channel not implemented';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService._prepareAndNotify', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', '_prepareAndNotify', msg, { channel });
     }
   }
 
   async _takeScreenshot(opts) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Take Screenshot', 'Service.PuppeteerService._prepareAndNotify', { opts })
+      );
+
       this.result[opts.returnAs] = await this.page.screenshot({
         encoding: opts.encoding,
         fullPage: true,
       }) as string;
     }
     catch (error) {
-      throw new CustomError(error, 'PuppeteerService', '_takeScreenshot', 'Could not take screenshot', { opts });
+      const msg = 'Could not take screenshot';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService._prepareAndNotify', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', '_takeScreenshot', msg, { opts });
     }
   }
 
   async _parseText(text: string): Promise<string> {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Parse Text', 'Service.PuppeteerService._prepareAndNotify', { text })
+      );
+
       text = text.trim();
       let parsed;
 
@@ -297,24 +436,44 @@ export class PuppeteerService {
       return parsed;
     }
     catch (error) {
-      throw new CustomError(error, 'PuppeteerService', '_parseText', 'Text cannot be transformed', { text });
+      const msg = 'Text cannot be transformed';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService._prepareAndNotify', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', '_parseText', msg, { text });
     }
   }
 
   async getDomainCookies(selectors: string): Promise<void> {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Get Domain Cookies', 'Service.PuppeteerService._prepareAndNotify', { selectors })
+      );
+
       // Get all cookies for make API call
       this.cookies = await this.page._client.send('Network.getAllCookies');
 
       this.processCookies(selectors);
       return;
     } catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'getDomainCookies', 'Cookies could not be obtained', { cookieNames: selectors });
+      const msg = 'Cookies could not be obtained';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService._prepareAndNotify', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'getDomainCookies', msg, { cookieNames: selectors });
     }
   }
 
   private processCookies(selectors: string): void {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Process Cookies', 'Service.PuppeteerService.processCookies', { selectors })
+      );
+
       const selectorNames = selectors.split(',');
       const cookiesForRequest = [];
 
@@ -332,7 +491,13 @@ export class PuppeteerService {
       return;
     }
     catch (error) {
-      throw new CustomError(error, 'PuppeteerService', 'processCookies', 'Cookies could not be processed', { selectors });
+      const msg = 'Cookies could not be processed';
+
+      this.loggerService.error(
+        new LoggerMessage(msg, 'Service.PuppeteerService.processCookies', error)
+      );
+
+      throw new CustomError(error, 'PuppeteerService', 'processCookies', msg, { selectors });
     }
   }
 }

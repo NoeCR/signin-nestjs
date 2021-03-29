@@ -17,7 +17,7 @@ import { CryptoController } from './controllers/crypto/crypto.controller';
 import { AliveController } from './controllers/alive/alive.controller';
 import { LoggerModule } from './shared/logger/logger.module';
 import { WinstonModule } from 'nest-winston';
-import { LoggerConfigImport } from '@shared/logger/logger-cinfig-imports';
+import { LoggerConfigImport } from '@shared/logger/logger-config';
 
 const SERVICES = [
   CronService,

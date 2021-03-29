@@ -5,12 +5,14 @@ import * as Discord from 'discord.js';
 import { EConfiguration } from 'src/config/enum/config-keys.enum';
 import { CustomError } from '@shared/error/models/custom-error.class';
 import { EComponents } from '@shared/enum/components.enum';
+import { LoggerService } from '@shared/logger/logger.service';
+import { LoggerMessage } from '@shared/logger/models/logger-message.class';
 
 export class DiscordService implements INotification {
 
   private Hook: Discord.WebhookClient;
 
-  constructor(private configService: ConfigService) {
+  constructor(private configService: ConfigService, private readonly loggerService: LoggerService,) {
     const discordId = this.configService?.get(EConfiguration.DISCORD_ID);
     const discordToken = this.configService?.get(EConfiguration.DISCORD_TOKEN);
 
@@ -19,6 +21,10 @@ export class DiscordService implements INotification {
 
   send(message: IMessage) {
     try {
+      this.loggerService.log(
+        new LoggerMessage('Message sending...', 'Service.DiscordService.send', { message })
+      );
+
       const imageStream = Buffer.from(message.base64string, 'base64');
       const attachment = new Discord.MessageAttachment(imageStream);
 
@@ -30,28 +36,44 @@ export class DiscordService implements INotification {
       this.Hook.send(embed);
     }
     catch (error) {
-      throw new CustomError(error, 'DiscordService', 'send', 'Message could not be sent', { message });
+      const msg = 'Message could not be sent';
+
+      this.loggerService.log(
+        new LoggerMessage(msg, 'Service.DiscordService.send', { message })
+      );
+
+      throw new CustomError(error, 'DiscordService', 'send', msg, { message });
     }
   }
 
   sendErrorMessage(error: CustomError) {
-    const groupId = this.configService.get(EConfiguration.DISCORD_GROUP_ID);
-    const groupMessage = `<@&${groupId}> :warning:`;
+    try {
+      this.loggerService.log(
+        new LoggerMessage('Error message sending...', 'Service.DiscordService.sendErrorMessage', { error })
+      );
 
-    const embed = new Discord.MessageEmbed()
-      .setTitle('Error')
-      .setDescription(error.message)
-      .setURL(this.getRepositoryUrl(error.component))
-      .addFields([
-        { name: 'Alert', value: groupMessage },
-        { name: 'Component', value: error.component },
-        { name: 'Method', value: error.method },
-        { name: 'Message', value: error.message },
-        { name: 'Data', value: JSON.stringify(error.data) },
-        { name: 'Timestamp', value: new Date().toISOString() },
-      ]);
+      const groupId = this.configService.get(EConfiguration.DISCORD_GROUP_ID);
+      const groupMessage = `<@&${groupId}> :warning:`;
 
-    this.Hook.send(embed);
+      const embed = new Discord.MessageEmbed()
+        .setTitle('Error')
+        .setDescription(error.message)
+        .setURL(this.getRepositoryUrl(error.component))
+        .addFields([
+          { name: 'Alert', value: groupMessage },
+          { name: 'Component', value: error.component },
+          { name: 'Method', value: error.method },
+          { name: 'Message', value: error.message },
+          { name: 'Data', value: JSON.stringify(error.data) },
+          { name: 'Timestamp', value: new Date().toISOString() },
+        ]);
+
+      this.Hook.send(embed);
+    } catch (error) {
+      this.loggerService.error(
+        new LoggerMessage('Error message could not be sent', 'Service.DiscordService.sendErrorMessage', { error })
+      );
+    }
   }
 
   randomBenderMessages(): string {

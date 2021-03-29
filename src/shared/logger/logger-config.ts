@@ -34,8 +34,9 @@ export class LoggerConfigImport {
     const transports: Transport[] = [];
 
     transports.push(LoggerConfigImport.defaultTransport());
-
-    if(configService.get(EConfiguration.NODE_ENV) === EEnvironment.TEST) {
+    console.log('asyncConfig ', configService.get(EConfiguration.NODE_ENV));
+    console.log('asyncConfig ', configService.get(EConfiguration.NODE_ENV) === EEnvironment.TEST);
+    if (configService.get(EConfiguration.NODE_ENV) === EEnvironment.TEST) {
       transports.push(LoggerConfigImport.elasticSearchTransport());
     }
 
