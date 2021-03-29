@@ -10,9 +10,10 @@ import { TaskRunner } from 'src/helpers/task-runner';
 export class CronService {
     constructor(private readonly taskRunner: TaskRunner, private readonly _configService: ConfigService) { }
 
-    @Cron(CronExpression.EVERY_QUARTER)
+    @Cron(CronExpression.EVERY_MINUTE)
     @ErrorHandler()
     async startProcess() {
+        console.log('CronService - startProcess ');
         try {
             if (this.isActiveTask())
                 await this.taskRunner.runTask();

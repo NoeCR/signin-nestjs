@@ -8,7 +8,7 @@ import { IStep } from 'src/interfaces/step.interface';
 import { CryptoService } from '../crypto/crypto.service';
 import { HoldedService } from '../holded/holded.service';
 import { DateTime } from 'luxon';
-import { mockedCookies } from 'mock/assets/cookies-mock';
+import { mockedCookies } from 'mocks/web/assets/cookies-mock';
 import { shouldExecuteTask } from 'src/validators/execute-task.validator';
 import { IPuppeteerParams } from 'src/interfaces/puppeteer-params.interface';
 import { ICredentials } from 'src/interfaces/credentials.interface';
