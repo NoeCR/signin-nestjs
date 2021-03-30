@@ -10,7 +10,7 @@ import { ElasticsearchTransport } from "winston-elasticsearch";
 export class LoggerConfigImport {
   static defaultTransport(): Transport {
     return new Winston.transports.Console({
-      level: 'silly',
+      level: 'debug',
       format: Winston.format.combine(
         Winston.format.timestamp(),
         nestWinstonModuleUtilities.format.nestLike()
@@ -21,12 +21,18 @@ export class LoggerConfigImport {
   static elasticSearchTransport(): Transport {
     return new ElasticsearchTransport({
       apm: null,
-      level: 'silly',
+      level: 'debug',
       indexPrefix: 'signin',
       format: Winston.format.json(),
       clientOpts: {
-        node: 'http://localhost:9200'
-      }
+        node: 'http://localhost:9200',
+        auth: {
+          username: 'elastic',
+          password: 'changeme'
+        }
+
+      },
+
     });
   }
 

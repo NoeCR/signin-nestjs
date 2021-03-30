@@ -4,6 +4,7 @@ import { ConfigService } from "src/config/services/config.service";
 import { Notification } from '../../helpers/notification';
 import { notificationFactory } from "src/helpers/notification-factory";
 import { LoggerService } from "@shared/logger/logger.service";
+import { LoggerMessage } from "@shared/logger/models/logger-message.class";
 
 export function ErrorHandler(report = true) {
   const injectConfig = Inject(ConfigService);
@@ -26,6 +27,10 @@ export function ErrorHandler(report = true) {
           const configService: ConfigService = this.configService;
           const loggerService: LoggerService = this.loggerService;
           const channel = configService.get(EConfiguration.DEFAULT_CHANNEL);
+
+          loggerService.error(
+            new LoggerMessage('Notify Error', 'ErrorHandler', { error })
+          );
 
           const _notificationService = new Notification(notificationFactory(channel, configService, loggerService));
 
