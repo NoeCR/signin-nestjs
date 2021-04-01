@@ -18,6 +18,11 @@ import { AliveController } from './controllers/alive/alive.controller';
 import { LoggerModule } from './shared/logger/logger.module';
 import { WinstonModule } from 'nest-winston';
 import { LoggerConfigImport } from '@shared/logger/logger-config';
+import { ApmService } from './shared/apm/apm.service';
+
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ApmInterceptor } from '@shared/apm/apm.interceptor';
+import { ApmModule } from './shared/apm/apm.module';
 
 const SERVICES = [
   CronService,
@@ -32,7 +37,7 @@ const SERVICES = [
   imports: [
     ConfigModule,
     WinstonModule.forRootAsync({
-      useFactory: (configService: ConfigService) => LoggerConfigImport.asyncConfig(configService),
+      useFactory: (configService: ConfigService, apmService: ApmService) => LoggerConfigImport.asyncConfig(configService, apmService),
       imports: [ConfigModule],
       inject: [ConfigService],
     }),
@@ -42,10 +47,16 @@ const SERVICES = [
       maxRedirects: 5,
     }),
     LoggerModule,
+    ApmModule,
   ],
   controllers: [CryptoController, AliveController],
   providers: [
     ...SERVICES,
+    // ApmService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ApmInterceptor
+    }
   ],
 })
 export class AppModule {

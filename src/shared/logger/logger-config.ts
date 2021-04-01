@@ -6,6 +6,8 @@ import { utilities as nestWinstonModuleUtilities } from 'nest-winston/dist/winst
 import { EConfiguration } from "src/config/enum/config-keys.enum";
 import { EEnvironment } from "@shared/enum/environments.enum";
 import { ElasticsearchTransport } from "winston-elasticsearch";
+import * as APM from 'elastic-apm-node';
+import { ApmService } from "@shared/apm/apm.service";
 
 export class LoggerConfigImport {
   static defaultTransport(): Transport {
@@ -18,9 +20,18 @@ export class LoggerConfigImport {
     });
   }
 
-  static elasticSearchTransport(): Transport {
+  static elasticSearchTransport(APM): Transport {
     return new ElasticsearchTransport({
-      apm: null,
+      // apm: APM,
+      // APM.start({
+      //   serviceName: 'signin',
+      //   serverUrl: 'http://localhost:8200',
+      //   active: true,
+      //   captureBody: 'all',
+      //   frameworkName: 'NestJS',
+      //   logLevel: 'info',
+      //   environment: 'production'
+      // }),
       level: 'debug',
       indexPrefix: 'signin',
       format: Winston.format.json(),
@@ -30,20 +41,19 @@ export class LoggerConfigImport {
           username: 'elastic',
           password: 'changeme'
         }
-
       },
 
     });
   }
 
-  static asyncConfig(configService: ConfigService): WinstonModuleOptions {
+  static asyncConfig(configService: ConfigService, apmService: ApmService): WinstonModuleOptions {
     const transports: Transport[] = [];
 
     transports.push(LoggerConfigImport.defaultTransport());
     console.log('asyncConfig ', configService.get(EConfiguration.NODE_ENV));
     console.log('asyncConfig ', configService.get(EConfiguration.NODE_ENV) === EEnvironment.TEST);
     if (configService.get(EConfiguration.NODE_ENV) === EEnvironment.TEST) {
-      transports.push(LoggerConfigImport.elasticSearchTransport());
+      transports.push(LoggerConfigImport.elasticSearchTransport(apmService));
     }
 
     return {

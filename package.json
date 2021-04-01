@@ -30,6 +30,7 @@
     "@types/luxon": "^1.26.2",
     "class-validator": "^0.13.1",
     "discord.js": "^12.5.1",
+    "elastic-apm-node": "^3.12.1",
     "luxon": "^1.26.0",
     "nest-puppeteer": "^1.1.1",
     "nest-winston": "^1.4.0",

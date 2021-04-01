@@ -136,8 +136,7 @@ export class PuppeteerService {
       switch (step.action) {
         case EAction.CLICK:
           if (this.result.execute) {
-            const selector = this.result[step.selector]
-              .includes(EHoldedButtons.BTN_LOCK_IN)
+            const selector = this.result[step.selector]?.includes(EHoldedButtons.BTN_LOCK_IN)
               ? `.${EHoldedButtons.BTN_LOCK_OUT}`
               : `.${EHoldedButtons.BTN_LOCK_IN}`;
 
